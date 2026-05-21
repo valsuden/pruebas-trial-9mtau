@@ -1,0 +1,86 @@
+================================================================================
+          MANUAL OFICIAL DE COMANDOS DE ADMINISTRACIÓN - ARCANE GAME
+================================================================================
+
+[ IMPORTANTE ]: Todos los comandos de abajo están BLOQUEADOS por defecto.
+Si intentas usarlos sin desbloquear la consola, el sistema dará error.
+Debes ejecutar el "Paso 0" (Comando Maestro) antes de usar cualquier otro.
+
+--------------------------------------------------------------------------------
+0. COMANDO MAESTRO (DESBLOQUEO DE CONSOLA)
+--------------------------------------------------------------------------------
+Desbloquea y activa todos los poderes y comandos de administración.
+
+* Comando a escribir:
+  color = "#f0ca28"
+
+* Mensaje en consola al tener éxito:
+  "✓ Theme resolved — palette unlocked"
+
+--------------------------------------------------------------------------------
+1. VER O MODIFICAR MONEDAS (coins)
+--------------------------------------------------------------------------------
+Te permite consultar o asignar monedas al jugador actual o a cualquier otro.
+
+* Leer monedas del jugador activo:
+  coins
+
+* Asignar monedas al jugador activo (Ejemplo: 1200 monedas):
+  coins = 1200
+
+* Asignar monedas a otro jugador específico (Ejemplo: 500 monedas a "Elias"):
+  coins = "Elias 500"
+
+--------------------------------------------------------------------------------
+2. VER O MODIFICAR PUNTAJE EN PARTIDA (score)
+--------------------------------------------------------------------------------
+Te permite ver tu puntuación actual en pantalla o cambiarla inmediatamente.
+
+* Leer puntaje actual en pantalla:
+  score
+
+* Modificar puntaje en pantalla (Ejemplo: Poner 450 puntos):
+  score = 450
+  (Nota: Esto actualizará también el récord en el perfil del usuario activo)
+
+--------------------------------------------------------------------------------
+3. GUARDAR EL RÉCORD ACTUAL EN LA TABLA (saveLeader)
+--------------------------------------------------------------------------------
+Registra el puntaje actual en pantalla como el récord oficial del jugador activo.
+
+* Comando a escribir:
+  saveLeader
+
+* Resultado:
+  Guarda el score y actualiza la tabla de clasificación local de inmediato.
+
+--------------------------------------------------------------------------------
+4. MODIFICAR RÉCORD DE OTRO JUGADOR (modLeader)
+--------------------------------------------------------------------------------
+Te permite ajustar el récord guardado de cualquier otro usuario de la tabla.
+
+* Comando a escribir (Ejemplo: Poner 2500 puntos a "Carlos"):
+  modLeader = "Carlos 2500"
+
+* Resultado:
+  Modifica la base de datos de récords y actualiza la tabla general al instante.
+
+--------------------------------------------------------------------------------
+5. CREAR CÓDIGOS DE MONEDAS EN TIEMPO REAL (addCode)
+--------------------------------------------------------------------------------
+Abre un asistente interactivo en pantalla para crear un código promocional.
+
+* Comando a escribir:
+  addCode("NUEVOPROMO")
+  (O alternativamente: addCode = "NUEVOPROMO")
+
+* Proceso interactivo (3 Pasos en pantalla):
+  1. El sistema te pedirá los días de validez del código (ej. 3).
+     --> SI INGRESASTES "0", el sistema cambiará a configuración por HORAS.
+  2. Si pusiste 0 en el paso anterior, te pedirá las horas de validez (ej. 20).
+  3. Finalmente, te pedirá la cantidad de monedas que regala el código (ej. 90).
+
+* Resultado:
+  El código se crea de forma ultra-segura en la memoria del juego y ya puede
+  ser canjeado inmediatamente en la tienda por cualquier usuario.
+================================================================================

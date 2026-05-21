@@ -1,0 +1,3237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trials of Mastery</title>
+    <!-- Consolidated Stylesheets in head to eliminate visual lag/flashing -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/banners.css">
+    <link rel="stylesheet" href="css/shop.css">
+</head>
+
+<body>
+    <!-- Start screen for audio initialization -->
+    <div id="start-screen">
+        <div id="start-screen-content">
+            Tap to start the adventure!
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <!-- Música de lobby: sonido de mar y gaviotas -->
+    <audio id="lobby-music" loop>
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1517.mp3" type="audio/mp3">
+    </audio>
+    <audio id="lobby-seagulls" loop>
+        <source src="https://www.orangefreesounds.com/wp-content/uploads/2015/01/Seagulls-sound.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- Música de juego: tema principal -->
+    <audio id="background-music" loop>
+        <source src="https://ia903107.us.archive.org/33/items/beach-bum-by-kevin-macleod/beach-bum-by-kevin-macleod.mp3" type="audio/mp3">
+    </audio>
+
+    <audio id="correct-sound">
+        <source
+            src="https://dl.dropboxusercontent.com/scl/fi/rurdyi741m2lja9ccmxvj/Correct-Answer-Sound-Effect.mp3?rlkey=eiu254jzz26g4yqoita04ncb7&st=guya9v63"
+            type="audio/mp3">
+    </audio>
+
+    <audio id="incorrect-sound">
+        <source
+            src="https://dl.dropboxusercontent.com/scl/fi/lqwt9s6ozvfzu7mxftdqv/Error-Sound-Effect-Non-copyright-sound-effects-TCW-SoundEffects.mp3?rlkey=qyjqzt0qu2ackt33koalcfzct&st=ajpz8dad"
+            type="audio/mp3">
+    </audio>
+
+    <audio id="victory-sound">
+        <source src="https://docs.google.com/uc?export=download&id=1Xb-UHzYqt676FAhXtfjVxZ_inOCTwIx3" type="audio/mp3">
+    </audio>
+
+    <div class="container">
+        <!-- Game image - only visible on start screen -->
+        <img id="game-header-image" class="game-image"
+            src="https://i.postimg.cc/JzFDW597/068ea439b0218fdd52c1434444600b23.png" alt="Trials of Mastery">
+
+
+        <h1>Trials of Mastery</h1>
+        <p>Prove your skills and master the trials. Will you succeed?</p>
+
+        <!-- Player name input section -->
+        <div id="player-setup">
+            <select class="input-box" id="player-name-input"
+                style="width:80%; padding:10px; font-size:0.8em; background-color:#003300; color:white; border:2px solid #ffcc00; border-radius:5px; cursor:pointer; font-family:'Press Start 2P', cursive;">
+                <option value="">Select your name...</option>
+                <!-- Las opciones de estudiantes se cargarán automáticamente desde data/students.js -->
+            </select>
+            <div class="highest-score">Highest Score: <span id="highest-score">78</span></div>
+        </div>
+
+        <button id="start-btn" class="btn">START</button>
+        <button id="view-leaderboard-start" class="btn" style="margin-top:10px;">🏆 Leaderboard</button>
+
+        <div id="game" class="hidden">
+            <!-- Welcome message with player name -->
+            <div class="player-name">Good luck, <span id="player-name-display">Player</span>!</div>
+
+            <h2 id="level-title">Awakening</h2>
+            <div class="timer-circle" id="timer">60</div>
+            <div id="game-clock" style="font-size:0.8em; color:#ffcc00; margin-top:5px;"></div>
+            <div class="score-counter">Score: <span id="score">0</span></div>
+            <div class="progress-indicator">Word <span id="current-word-num">1</span>/10</div>
+            <h3 id="word-to-translate" translate="no">Word</h3>
+            <input type="text" class="input-box" id="answer" placeholder="Enter translation...">
+
+            <!-- Power-up buttons -->
+            <div class="powerup-container">
+                <button id="bonus-time-btn" class="powerup-btn">Bonus Time (+10s)</button>
+                <button id="skip-word-btn" class="powerup-btn">Skip Word</button>
+            </div>
+
+            <button id="submit-btn" class="btn">SUBMIT</button>
+            <p id="feedback"></p>
+            <!-- 🏆 Leaderboard container -->
+            <!-- 🏆 Top 3 Live -->
+            <div id="top3-display"
+                style="margin-top:20px; padding:15px; background:rgba(0,0,0,0.3); border-radius:10px; border:2px solid #ffcc00;">
+                <h3 style="color:#ffcc00; font-size:0.8em; margin-bottom:10px;">🏆 TOP 3 🏆</h3>
+                <div id="top3-list" style="font-size:0.6em; color:#ffffff; line-height:1.8;">
+                    <p>Loading top players...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="level-complete" class="level-complete hidden">
+        <div class="level-complete-content">
+            <h2>Trial Completed!</h2>
+            <p>You have mastered this level.</p>
+            <p>Score: <span id="level-score">0</span></p>
+            <button id="next-level-btn" class="btn">NEXT TRIAL</button>
+        </div>
+    </div>
+
+    <!-- Focus Training (Tema Playa y Palmeras) -->
+    <div id="focus-training" class="ft-overlay">
+        <div class="ft-card">
+            <div class="ft-card-content">
+                <h2 class="ft-title">🌴 FOCUS TRAINING 🌊</h2>
+                <p class="ft-subtitle">Practice your weak words before hitting the beach!</p>
+                <div class="ft-progress">
+                    Word <span id="ft-current">1</span> of <span id="ft-total">3</span>
+                </div>
+                <div id="ft-word" class="ft-word-display">—</div>
+                <input type="text" id="ft-answer" placeholder="Translate..." class="ft-input">
+                <div id="ft-feedback" class="ft-feedback-text"></div>
+                <button id="ft-submit-btn" class="ft-btn">CHECK</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <div id="game-over" class="game-over hidden">
+        <div class="game-over-content">
+            <h2>GAME OVER</h2>
+            <p>Too many mistakes!</p>
+            <p>Your score: <span id="final-score">0</span></p>
+            <div id="focus-words-feedback" style="margin-top:15px; text-align:left;"></div>
+            <button id="try-again-btn" class="btn">TRY AGAIN</button>
+        </div>
+    </div>
+
+
+    <script>
+
+        (function () {
+
+            // Variable for music
+            let backgroundMusic;
+            let correctSound;
+            let incorrectSound;
+            let musicEnabled = true;
+
+            function playAudioBoosted(audioElementId) {
+                const audio = document.getElementById(audioElementId);
+                if (!audio) return;
+                audio.volume = 1.0; // Máximo volumen físico del hardware
+                audio.play().catch(err => console.log(`Playback failed for ${audioElementId}:`, err));
+            }
+
+            // Initialize background music
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('level-complete').classList.add('hidden');
+                document.getElementById('game-over').classList.add('hidden');
+
+                // Load highest score from localStorage
+                const highestScore = localStorage.getItem('highestScore') || 0;
+                document.getElementById('highest-score').textContent = highestScore;
+
+                // Initialize background music
+                backgroundMusic = document.getElementById('background-music');
+                correctSound = document.getElementById('correct-sound');
+                incorrectSound = document.getElementById('incorrect-sound');
+                victorySound = document.getElementById('victory-sound');
+
+                // Add event for start screen to initialize music
+                document.getElementById('start-screen').addEventListener('click', function () {
+                    // Hide start screen
+                    this.style.display = 'none';
+
+                    // Tocar música de lobby (mar y gaviotas) al entrar al menú
+                    playAudioBoosted('lobby-music');
+                    playAudioBoosted('lobby-seagulls');
+                });
+            });
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+            document.getElementById('next-level-btn').addEventListener('click', loadNextLevel);
+            document.getElementById('answer').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+            document.getElementById('try-again-btn').addEventListener('click', tryAgain);
+
+            // Events for power-up buttons
+            document.getElementById('bonus-time-btn').addEventListener('click', addBonusTime);
+            document.getElementById('skip-word-btn').addEventListener('click', skipWord);
+
+
+
+            let currentLevel = 0;
+            let playerName = 'Player';
+            let score = 0;
+            let levelScore = 0;
+            let timeLeft;
+            let timerInterval;
+            let currentWord = '';
+            let selectedWords = [];
+            let wordIndex = 0;
+
+            // Variables for power-ups
+            let bonusTimeUsed = false;
+            let skipWordUsed = false;
+
+            // Variable for tracking errors
+            let errorCount = 0;
+            let magicEnergy = 5; // Energía mágica inicial
+            let isRecovering = false; // Estado de recuperación
+            let difficultWords = {}; // Palabras marcadas como difíciles
+            let wordFailCount = {}; // Contador de fallos por palabra
+            let eventActive = false; // Si hay evento activo
+            let currentEvent = null; // Tipo de evento actual
+            let currentStreak = 0; // Racha actual de respuestas consecutivas
+            let maxStreak = 0; // Racha máxima alcanzada en la sesión
+            let streakLevels = [3, 5, 7, 10]; // Niveles de racha para efectos especiales
+            let eventTimeLeft = 0; // Tiempo restante del evento
+            // Palabras usadas por nivel (evita repetir hasta agotar el pool)
+            const usedWordsByLevel = {};
+            let sessionMistakeWords = new Set();
+            let isFTFromGameOver = false;
+
+
+            function startGame() {
+                // Hide the game image when starting the game
+                document.getElementById('game-header-image').classList.add('hidden');
+                // Ocultar el botón del leaderboard durante el juego
+                document.getElementById('view-leaderboard-start').classList.add('hidden');
+                // Pausa lobby music y arranca música del juego
+                var lobbyMusic = document.getElementById('lobby-music');
+                var lobbySeagulls = document.getElementById('lobby-seagulls');
+                if (lobbyMusic && !lobbyMusic.paused) {
+                    lobbyMusic.pause();
+                    lobbyMusic.currentTime = 0;
+                }
+                if (lobbySeagulls && !lobbySeagulls.paused) {
+                    lobbySeagulls.pause();
+                    lobbySeagulls.currentTime = 0;
+                }
+                if (backgroundMusic && typeof musicEnabled !== 'undefined' && musicEnabled) {
+                    backgroundMusic.currentTime = 0;
+                    setTimeout(() => {
+                        playAudioBoosted('background-music');
+                    }, 500);
+                }
+
+                // Get player name
+                playerName = document.getElementById('player-name-input').value.trim() || 'Player';
+                document.getElementById('player-name-display').textContent = playerName;
+                if (typeof Users !== 'undefined' && Users._applyBannerToName) {
+                    Users._applyBannerToName();
+                }
+
+                currentLevel = 0;
+                score = 0;
+                document.getElementById('score').textContent = score;
+                document.getElementById('player-setup').classList.add('hidden');
+                document.getElementById('start-btn').classList.add('hidden');
+                document.getElementById('game').classList.remove('hidden');
+                document.getElementById('level-complete').classList.add('hidden'); // Ensure level-complete is hidden
+                document.getElementById('game-over').classList.add('hidden'); // Ensure game-over is hidden
+
+                // Reset power-ups
+                resetPowerups();
+
+                // Reset error count
+                errorCount = 0;
+                sessionMistakeWords = new Set();
+
+                magicEnergy = 5;
+                isRecovering = false;
+                difficultWords = JSON.parse(localStorage.getItem('difficultWords') || '{}');
+                wordFailCount = JSON.parse(localStorage.getItem('wordFailCount') || '{}');
+                eventActive = false;
+                currentEvent = null;
+                currentStreak = 0;
+                maxStreak = 0;
+
+
+                startTop3Updates();
+                loadLevel();
+            }
+
+
+
+            function loadLevel() {
+                document.getElementById('view-leaderboard-start').classList.add('hidden');
+                levelScore = 0;
+                wordIndex = 0;
+
+                // Reset power-ups for each level
+                resetPowerups();
+
+                // Reset error count for each level
+                errorCount = 0;
+
+                const level = levels[currentLevel];
+                document.getElementById('level-title').textContent = level.name;
+                timeLeft = level.time;
+                updateTimer();
+
+                selectWordsWithDifficulty();
+                updateEnergyDisplay();
+
+                nextWord();
+                startTimer(); // Aquí se activa el conteo regresivo correctamente
+            }
+
+
+            function loadNextLevel() {
+                currentLevel++;
+                if (currentLevel < levels.length) {
+                    document.getElementById('level-complete').classList.add('hidden');
+                    loadLevel();
+                } else {
+                    // Game completed
+                    updateHighestScore();
+                    showEpicVictoryScreen();
+                    document.getElementById('level-complete').classList.add('hidden');
+                    document.getElementById('game').classList.add('hidden');
+                    document.getElementById('player-setup').classList.remove('hidden');
+                    document.getElementById('start-btn').classList.remove('hidden');
+                    // Mostrar el botón leaderboard cuando se regresa al menú principal
+                    document.getElementById('view-leaderboard-start').classList.remove('hidden');
+
+
+                    // Show the game image again when returning to start screen
+                    document.getElementById('game-header-image').classList.remove('hidden');
+
+                    // Stop gameplay music when returning to start screen / showing victory
+                    if (backgroundMusic) {
+                        backgroundMusic.pause();
+                        backgroundMusic.currentTime = 0;
+                    }
+                }
+            }
+
+            function startTimer() {
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimer();
+                    if (timeLeft <= 0) gameOver();
+                }, 1000);
+            }
+
+            function updateTimer() {
+                const timerCircle = document.getElementById('timer');
+                timerCircle.textContent = timeLeft;
+
+                // Solo cambiar color de fondo si no hay efectos de racha activos
+                if (!timerCircle.classList.contains('timer-streak')) {
+                    if (timeLeft <= 5) {
+                        timerCircle.style.backgroundColor = 'red';
+                    } else if (timeLeft <= 30) {
+                        timerCircle.style.backgroundColor = 'yellow';
+                    } else {
+                        timerCircle.style.backgroundColor = 'green';
+                    }
+                }
+
+                // Mantener transición suave
+                timerCircle.classList.add('timer-smooth');
+
+                // Mostrar fecha y hora
+            }
+
+
+            function nextWord() {
+                if (wordIndex < selectedWords.length) {
+                    let next = selectedWords[wordIndex];
+
+                    // 🔒 Evitar repetir la misma palabra si el arreglo no cambia correctamente
+                    if (next === currentWord) {
+                        wordIndex++;
+                        if (wordIndex >= selectedWords.length) {
+                            levelComplete();
+                            return;
+                        }
+                        next = selectedWords[wordIndex];
+                    }
+
+                    currentWord = next;
+                    document.getElementById('word-to-translate').textContent = currentWord;
+                    document.getElementById('word-to-translate').setAttribute('translate', 'no');
+                    document.getElementById('feedback').textContent = '';
+                    // updateWordCounter(); ← eliminada porque no existe
+                } else {
+                    levelComplete();
+                }
+            }
+
+
+
+
+            function checkAnswer() {
+                const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+
+                // Seleccionar el mapeo adecuado según modo de recuperación
+                const mapping = isRecovering ? (levels[0] && levels[0].words) : (levels[currentLevel] && levels[currentLevel].words);
+                const correctAnswers = mapping ? mapping[currentWord] : undefined;
+
+                // Si no hay mapeo para la palabra actual, registrar y tratar como incorrecta segura
+                if (!Array.isArray(correctAnswers)) {
+                    console.warn('checkAnswer: no mapping found for word', currentWord, 'level', isRecovering ? 0 : currentLevel);
+                    document.getElementById('feedback').textContent = 'No mapping for this word.';
+                    document.getElementById('feedback').style.color = '#ff9900';
+                    handleIncorrectAnswer([]);
+                    return;
+                }
+
+                // Comparar respuestas en minúsculas
+                const normalized = correctAnswers.map(a => a.toLowerCase());
+                if (normalized.includes(userAnswer)) {
+                    handleCorrectAnswer();
+                } else {
+                    handleIncorrectAnswer(correctAnswers);
+                }
+            }
+
+
+            function handleCorrectAnswer() {
+                if (isRecovering) {
+                    // Modo recuperación
+                    recoveryWordsCorrect++;
+                    currentRecoveryIndex++;
+
+                    document.getElementById('feedback').textContent = `Correct! Energy recovering... (${recoveryWordsCorrect}/3)`;
+                    document.getElementById('feedback').style.color = '#00ff00';
+
+                    correctSound.currentTime = 0;
+                    correctSound.play().catch(e => console.log('Error playing correct sound:', e));
+
+                    if (recoveryWordsCorrect >= 3) {
+                        completeEnergyRecovery();
+                    } else {
+                        setTimeout(() => {
+                            showNextRecoveryWord();
+                        }, 1000);
+                    }
+                } else {
+                    // Modo normal
+                    let pointsToAdd = 1;
+                    if (currentEvent === 'star_rain') {
+                        pointsToAdd = 2; // Doble puntos durante lluvia de estrellas
+                    }
+
+                    score += pointsToAdd;
+                    levelScore += pointsToAdd;
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('feedback').textContent = 'Correct!';
+                    // 🚀 Verificar si se alcanzó el puntaje máximo
+
+
+                    document.getElementById('feedback').style.color = '#00ff00';
+                    wordIndex++;
+                    document.getElementById('answer').value = '';
+
+                    correctSound.currentTime = 0;
+                    correctSound.play().catch(e => console.log('Error playing correct sound:', e));
+
+                    errorCount = 0;
+                    // Incrementar racha de respuestas correctas
+                    currentStreak++;
+                    if (currentStreak > maxStreak) {
+                        maxStreak = currentStreak;
+                    }
+
+                    // Aplicar efectos visuales según la racha
+                    updateStreakVisuals();
+
+                    // Verificar evento sorpresa después de respuesta correcta
+                    checkForRandomEvent();
+
+                    setTimeout(() => {
+                        nextWord();
+                    }, 500);
+                }
+            }
+
+            function handleIncorrectAnswer(correctAnswers) {
+                if (isRecovering) {
+                    // Mostrar la respuesta correcta
+                    const correctAnswerText = correctAnswers.join(', ');
+                    document.getElementById('feedback').textContent = `Incorrect! Correct: ${correctAnswerText}`;
+                    document.getElementById('feedback').style.color = '#ff0000';
+
+                    // Reproducir sonido de error
+                    incorrectSound.currentTime = 0;
+                    incorrectSound.play().catch(e => console.log('Error playing incorrect sound:', e));
+
+                    // Avanzar a la siguiente palabra de recuperación después de 2 segundos
+                    setTimeout(() => {
+                        document.getElementById('answer').value = '';
+                        currentRecoveryIndex++;
+                        showNextRecoveryWord();
+                    }, 500);
+                } else {
+                    // Modo normal - reducir energía mágica
+                    magicEnergy--;
+                    updateEnergyDisplay();
+
+                    // ¡¡¡MOVER ESTAS LÍNEAS AQUÍ!!!
+                    // Reiniciar racha en respuesta incorrecta
+                    currentStreak = 0;
+                    removeStreakVisuals();
+
+                    // Marcar palabra como difícil
+                    markWordAsDifficult(currentWord);
+
+                    // Registrar fallo en la sesión
+                    sessionMistakeWords.add(currentWord);
+
+                    const correctAnswerText = correctAnswers.join(', ');
+                    document.getElementById('feedback').textContent = `Energy lost! Correct: ${correctAnswerText}`;
+                    document.getElementById('feedback').style.color = '#ff0000';
+
+                    incorrectSound.currentTime = 0;
+                    incorrectSound.play().catch(e => console.log('Error playing incorrect sound:', e));
+
+                    // Verificar si se acabó la energía
+                    if (magicEnergy <= 0) {
+                        setTimeout(() => {
+                            startEnergyRecovery();
+                        }, 500);
+                        return;
+                    }
+
+                    // Continuar con palabra diferente
+                    setTimeout(() => {
+                        document.getElementById('answer').value = '';
+                        showDifferentWord();
+                    }, 500);
+                }
+            }
+
+
+            function completeEnergyRecovery() {
+                document.getElementById('view-leaderboard-start').classList.add('hidden');
+                magicEnergy = 3; // Recuperar energía parcialmente
+                isRecovering = false;
+                recoveryWordsCorrect = 0;
+
+                // Restaurar interfaz normal
+                document.getElementById('level-title').textContent = levels[currentLevel].name;
+                document.getElementById('feedback').textContent = 'Energy restored! Continue your trial!';
+                document.getElementById('feedback').style.color = '#00ff4c';
+
+                updateEnergyDisplay();
+
+                // Reanudar timer
+                startTimer();
+
+                // Continuar con el juego normal
+                setTimeout(() => {
+                    nextWord();
+                }, 1500);
+            }
+            function markWordAsDifficult(word) {
+                // Inicializar contador si no existe
+                if (!wordFailCount[word]) {
+                    wordFailCount[word] = 0;
+                }
+
+                wordFailCount[word]++;
+
+                // Marcar como difícil después de 3 fallos
+                if (wordFailCount[word] >= 2) {
+                    difficultWords[word] = true;
+                    console.log(`Palabra marcada como difícil: ${word}`);
+                    localStorage.setItem('difficultWords', JSON.stringify(difficultWords));
+                    localStorage.setItem('wordFailCount', JSON.stringify(wordFailCount));
+                }
+            }
+
+
+            // ─────────────────────────────────────────────
+            // SISTEMA DE DOMINIO DE PALABRAS
+            // ─────────────────────────────────────────────
+            const FT_HITS_NEEDED = 3;
+            const FT_SESSIONS_NEEDED = 2;
+
+            function getTranslation(word) {
+                for (let i = 0; i < levels.length; i++) {
+                    if (levels[i].words && levels[i].words[word]) {
+                        return levels[i].words[word][0];
+                    }
+                }
+                return '?';
+            }
+
+            function getAllCorrectAnswers(word) {
+                for (let i = 0; i < levels.length; i++) {
+                    if (levels[i].words && levels[i].words[word]) {
+                        return levels[i].words[word].map(a => a.toLowerCase());
+                    }
+                }
+                return [];
+            }
+
+            function getFocusWords() {
+                return Object.entries(wordFailCount)
+                    .filter(function (entry) { return entry[1] > 0; })
+                    .sort(function (a, b) { return b[1] - a[1]; })
+                    .slice(0, 3)
+                    .map(function (entry) { return entry[0]; });
+            }
+
+            function checkWordMastered(word) {
+                var data = JSON.parse(localStorage.getItem('ftMastery') || '{}');
+                var entry = data[word];
+                if (!entry) return false;
+                return entry.hits >= FT_HITS_NEEDED && entry.sessions && entry.sessions.length >= FT_SESSIONS_NEEDED;
+            }
+
+            function recordHit(word, correct) {
+                var today = new Date().toDateString();
+                var data = JSON.parse(localStorage.getItem('ftMastery') || '{}');
+                if (!data[word]) data[word] = { hits: 0, sessions: [] };
+                if (correct) {
+                    data[word].hits = (data[word].hits || 0) + 1;
+                    if (data[word].sessions.indexOf(today) === -1) {
+                        data[word].sessions.push(today);
+                    }
+                } else {
+                    data[word].hits = 0;
+                }
+                localStorage.setItem('ftMastery', JSON.stringify(data));
+                return data[word];
+            }
+
+
+
+            function showFocusWordsFeedback() {
+                const feedbackDiv = document.getElementById('focus-words-feedback');
+                if (!feedbackDiv) return;
+
+                // Obtener todas las palabras falladas ordenadas de mayor a menor
+                const sorted = Object.entries(wordFailCount)
+                    .filter(([word, count]) => count > 0)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+
+                if (sorted.length === 0) {
+                    feedbackDiv.innerHTML = '<p style="color:#00ff4c; font-size:0.7em; text-align:center;">✓ No problematic words this session!</p>';
+                    return;
+                }
+
+                // Buscar la traducción de cada palabra en todos los niveles
+                function getTranslation(word) {
+                    for (let level of levels) {
+                        if (level.words && level.words[word]) {
+                            return level.words[word][0];
+                        }
+                    }
+                    return '?';
+                }
+
+                let html = '<p style="color:#f2c94c; font-size:0.7em; margin-bottom:8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">🌊 FOCUS ON THESE WORDS:</p>';
+                html += '<div style="background:rgba(0,92,138,0.3); border-radius:8px; padding:10px; border: 1px solid rgba(242,201,76,0.3);">';
+                sorted.forEach(([word, count]) => {
+                    const translation = getTranslation(word);
+                    html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; 
+                        padding:6px 8px; margin-bottom:4px; background:rgba(0,131,176,0.2); 
+                        border-left:3px solid #f2c94c; border-radius:4px;">
+                <span style="color:#ffffff; font-size:0.75em;">
+                    <span style="color:#f2c94c;">${word}</span>
+                    <span style="color:#81d4fa;"> → </span>
+                    <span style="color:#69f0ae;">${translation}</span>
+                </span>
+                <span style="color:#ff8c00; font-size:0.6em;">${count} ✗</span>
+            </div>`;
+                });
+                html += '</div>';
+
+                feedbackDiv.innerHTML = html;
+            }
+
+
+            // ─────────────────────────────────────────────
+            // FOCUS TRAINING — LÓGICA
+            // ─────────────────────────────────────────────
+            var ftWords = [];
+            var ftIndex = 0;
+
+            function showFocusTraining(fromGameOver) {
+                isFTFromGameOver = !!fromGameOver;
+                ftWords = getFocusWords().filter(function (w) { return !checkWordMastered(w); });
+                if (ftWords.length === 0) {
+                    if (isFTFromGameOver) {
+                        showGameOverScreenDirectly();
+                    } else {
+                        startGameCore();
+                    }
+                    return;
+                }
+                ftIndex = 0;
+                document.getElementById('ft-total').textContent = ftWords.length;
+                document.getElementById('focus-training').style.display = 'flex';
+                showFTWord();
+            }
+
+            function showFTWord() {
+                var word = ftWords[ftIndex];
+                document.getElementById('ft-current').textContent = ftIndex + 1;
+                document.getElementById('ft-word').textContent = word;
+                document.getElementById('ft-answer').value = '';
+                document.getElementById('ft-feedback').textContent = '';
+                document.getElementById('ft-feedback').style.color = '';
+                document.getElementById('ft-submit-btn').textContent = 'CHECK';
+                document.getElementById('ft-submit-btn').onclick = checkFTAnswer;
+                document.getElementById('ft-answer').focus();
+            }
+
+            function checkFTAnswer() {
+                var word = ftWords[ftIndex];
+                var userAnswer = document.getElementById('ft-answer').value.trim().toLowerCase();
+                var allCorrect = getAllCorrectAnswers(word);
+                var isCorrect = allCorrect.indexOf(userAnswer) !== -1;
+                var entry = recordHit(word, isCorrect);
+
+                if (isCorrect) {
+                    if (entry.hits >= FT_HITS_NEEDED && entry.sessions.length >= FT_SESSIONS_NEEDED) {
+                        document.getElementById('ft-feedback').innerHTML = '🏆 <span style="color:#ffd700;">You mastered</span> <span style="color:#00ff9d;">"' + word + '"</span>!<br><span style="color:#888; font-size:0.85em;">It will no longer appear in Focus Training</span>';
+                        document.getElementById('ft-feedback').style.color = '#ffd700';
+                    } else {
+                        document.getElementById('ft-feedback').textContent = '✓ Correct!';
+                        document.getElementById('ft-feedback').style.color = '#00ff4c';
+                    }
+                    document.getElementById('ft-submit-btn').textContent = 'NEXT →';
+                    document.getElementById('ft-submit-btn').onclick = advanceFT;
+                } else {
+                    var correctAnswer = getTranslation(word);
+                    document.getElementById('ft-feedback').innerHTML = '✗ Correct answer: <span style="color:#ffcc00;">' + correctAnswer + '</span><br><span style="color:#aaaaaa; font-size:0.85em;">Type it to continue...</span>';
+                    document.getElementById('ft-feedback').style.color = '#ff4444';
+                    document.getElementById('ft-answer').value = '';
+                    document.getElementById('ft-answer').focus();
+                    document.getElementById('ft-submit-btn').textContent = 'CHECK';
+                    document.getElementById('ft-submit-btn').onclick = function () {
+                        var retryAnswer = document.getElementById('ft-answer').value.trim().toLowerCase();
+                        var retryCorrect = getAllCorrectAnswers(word);
+                        if (retryCorrect.indexOf(retryAnswer) !== -1) {
+                            document.getElementById('ft-feedback').textContent = '✓ Good! Now you can continue.';
+                            document.getElementById('ft-feedback').style.color = '#00ff4c';
+                            document.getElementById('ft-submit-btn').textContent = 'NEXT →';
+                            document.getElementById('ft-submit-btn').onclick = advanceFT;
+                        } else {
+                            document.getElementById('ft-feedback').innerHTML = '✗ Not yet. Write: <span style="color:#ffcc00;">' + correctAnswer + '</span>';
+                            document.getElementById('ft-feedback').style.color = '#ff4444';
+                            document.getElementById('ft-answer').value = '';
+                            document.getElementById('ft-answer').focus();
+                        }
+                    };
+                }
+            }
+
+            function advanceFT() {
+                ftIndex++;
+                if (ftIndex >= ftWords.length) {
+                    document.getElementById('focus-training').style.display = 'none';
+                    if (isFTFromGameOver) {
+                        showGameOverScreenDirectly();
+                    } else {
+                        startGameCore();
+                    }
+                } else {
+                    showFTWord();
+                }
+            }
+
+            function startGameCore() {
+                document.getElementById('focus-training').style.display = 'none';
+                currentLevel = 0;
+                score = 0;
+                document.getElementById('score').textContent = score;
+                errorCount = 0;
+                magicEnergy = 5;
+                isRecovering = false;
+                eventActive = false;
+                currentEvent = null;
+                currentStreak = 0;
+                maxStreak = 0;
+                loadLevel();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('ft-answer').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('ft-submit-btn').click();
+                    }
+                });
+
+            });
+
+
+
+            function getDifficultWordsForLevel() {
+                const levelWords = Object.keys(levels[currentLevel].words);
+                const difficultInThisLevel = levelWords.filter(word => difficultWords[word]);
+                return difficultInThisLevel;
+            }
+
+
+            function selectWordsWithDifficulty() {
+                const level = levels[currentLevel];
+                const allWords = Object.keys(level.words || {});
+                if (!usedWordsByLevel[currentLevel]) usedWordsByLevel[currentLevel] = new Set();
+
+                const difficultInLevel = getDifficultWordsForLevel();
+                selectedWords = [];
+
+                // incluir hasta 4 difíciles, algunas pueden aparecer 2 veces
+                let difficultCandidates = difficultInLevel.filter(w => !usedWordsByLevel[currentLevel].has(w));
+                const numDifficult = Math.min(4, difficultCandidates.length);
+                for (let i = 0; i < numDifficult; i++) {
+                    selectedWords.push(difficultCandidates[i]);
+                    // Si la palabra tiene 4+ fallos, agregarla una segunda vez (se mezclará después para no ser consecutiva)
+                    if (wordFailCount[difficultCandidates[i]] >= 4) {
+                        selectedWords.push(difficultCandidates[i]);
+                    }
+                    usedWordsByLevel[currentLevel].add(difficultCandidates[i]);
+                }
+
+                // mezclar el resto
+                let remainingWords = allWords.filter(w => !selectedWords.includes(w));
+                for (let i = remainingWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [remainingWords[i], remainingWords[j]] = [remainingWords[j], remainingWords[i]];
+                }
+
+                // rellenar hasta 10
+                for (let i = 0; i < remainingWords.length && selectedWords.length < 10; i++) {
+                    selectedWords.push(remainingWords[i]);
+                    usedWordsByLevel[currentLevel].add(remainingWords[i]);
+                }
+
+                // si no llegamos a 10, reiniciar usadas y tomar más
+                if (selectedWords.length < 10) {
+                    usedWordsByLevel[currentLevel].clear();
+                    remainingWords = allWords.filter(w => !selectedWords.includes(w));
+                    for (let i = 0; i < remainingWords.length && selectedWords.length < 10; i++) {
+                        selectedWords.push(remainingWords[i]);
+                        usedWordsByLevel[currentLevel].add(remainingWords[i]);
+                    }
+                }
+
+                // barajar orden final evitando palabras difíciles consecutivas
+                for (let i = selectedWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [selectedWords[i], selectedWords[j]] = [selectedWords[j], selectedWords[i]];
+                }
+                // separar palabras repetidas para que no sean consecutivas
+                for (let i = 1; i < selectedWords.length; i++) {
+                    if (selectedWords[i] === selectedWords[i - 1]) {
+                        // buscar una posición más adelante para moverla
+                        for (let j = i + 2; j < selectedWords.length; j++) {
+                            if (selectedWords[j] !== selectedWords[i]) {
+                                [selectedWords[i], selectedWords[j]] = [selectedWords[j], selectedWords[i]];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            function checkForRandomEvent() {
+                if (eventActive) return; // Ya hay un evento activo
+
+                const randomNum = Math.random() * 1000; // Número entre 0 y 1000
+
+                if (randomNum < 5) { // 0.5% de probabilidad (1 en 200)
+                    triggerEvent('legendary_power');
+                } else if (randomNum < 15) { // 1% de probabilidad (1 en 100)
+                    triggerEvent('star_rain');
+                }
+            }
+
+            function triggerEvent(eventType) {
+                eventActive = true;
+                currentEvent = eventType;
+
+                if (eventType === 'star_rain') {
+                    startStarRainEvent();
+                } else if (eventType === 'legendary_power') {
+                    startLegendaryPowerEvent();
+                }
+            }
+
+            function startStarRainEvent() {
+                eventTimeLeft = 20; // 20 segundos
+
+                // Mostrar notificación del evento
+                showEventNotification('⭐ STAR RAIN EVENT! ⭐', 'Double points for 20 seconds!');
+
+                // Iniciar contador del evento
+                const eventInterval = setInterval(() => {
+                    eventTimeLeft--;
+                    updateEventDisplay();
+
+                    if (eventTimeLeft <= 0) {
+                        endStarRainEvent();
+                        clearInterval(eventInterval);
+                    }
+                }, 1000);
+            }
+
+            function startLegendaryPowerEvent() {
+                const powers = [
+                    'Time Freeze: +30 seconds',
+                    'Energy Shield: +3 magic energy',
+                    'Word Reveal: See next 3 answers',
+                    'Double XP: 2x points for this level',
+                    'Phoenix Resurrection: Immunity to next 3 errors'
+                ];
+
+                const randomPower = powers[Math.floor(Math.random() * powers.length)];
+
+                showEventNotification('🌟 LEGENDARY POWER! 🌟', `You gained: ${randomPower}`);
+
+                // Aplicar el poder
+                applyLegendaryPower(randomPower);
+
+                eventActive = false; // Los poderes legendarios son instantáneos
+            }
+
+            function applyLegendaryPower(power) {
+                if (power.includes('Time Freeze')) {
+                    timeLeft += 30;
+                    updateTimer();
+                } else if (power.includes('Energy Shield')) {
+                    magicEnergy = Math.min(5, magicEnergy + 3);
+                    updateEnergyDisplay();
+                } else if (power.includes('Double XP')) {
+                    // Marcar para duplicar puntos este nivel
+                    currentEvent = 'double_xp';
+                }
+                // Otros poderes se pueden implementar según necesidades
+            }
+
+            function endStarRainEvent() {
+                eventActive = false;
+                currentEvent = null;
+                hideEventDisplay();
+            }
+
+            function showEventNotification(title, message) {
+                // Crear elemento de notificación temporal
+                const notification = document.createElement('div');
+                notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #ffcc00;
+            text-align: center;
+            z-index: 1000;
+            font-size: 1.2em;
+            animation: pulse 0.5s ease-in-out;
+        ">
+            <h3>${title}</h3>
+            <p>${message}</p>
+        </div>
+    `;
+
+                document.body.appendChild(notification);
+
+                // Remover después de 3 segundos
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            function updateEventDisplay() {
+                if (currentEvent === 'star_rain') {
+                    const minutes = Math.floor(eventTimeLeft / 60);
+                    const seconds = eventTimeLeft % 60;
+                    document.getElementById('feedback').textContent = `⭐ STAR RAIN: ${minutes}:${seconds.toString().padStart(2, '0')} ⭐`;
+                    document.getElementById('feedback').style.color = '#ffcc00';
+                }
+            }
+
+            function hideEventDisplay() {
+                if (document.getElementById('feedback').textContent.includes('STAR RAIN')) {
+                    document.getElementById('feedback').textContent = '';
+                }
+            }
+
+            function updateStreakVisuals() {
+                const timerCircle = document.getElementById('timer');
+                const container = document.querySelector('.container');
+                const streakIndicator = getOrCreateStreakIndicator();
+
+                // 🔄 Limpiar antes de aplicar nuevo efecto
+                container.classList.remove(
+                    'inferno-background',
+                    'stormy-background',
+                    'cosmic-background',
+                    'streak-glow'
+                );
+                timerCircle.classList.remove(
+                    'inferno-effect',
+                    'thunderstorm-effect',
+                    'energy-effect',
+                    'timer-streak'
+                );
+                document.body.style.background = ''; // quitar fondo rojo del body
+
+                // transición suave en el timer
+                timerCircle.classList.add('timer-smooth');
+
+                // 🌌 Cosmic Streak
+                if (currentStreak >= 60) {
+                    timerCircle.classList.add('timer-streak', 'energy-effect');
+                    container.classList.add('streak-glow', 'cosmic-background');
+                    streakIndicator.textContent = `🌌 COSMIC STREAK: ${currentStreak} 🌌`;
+                    streakIndicator.style.color = '#bb00ff';
+
+                    // partículas cósmicas
+                    for (let i = 0; i < 20; i++) {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+                        particle.style.top = Math.random() * container.offsetHeight + "px";
+                        particle.style.left = Math.random() * container.offsetWidth + "px";
+                        container.appendChild(particle);
+                        setTimeout(() => particle.remove(), 2000);
+                    }
+
+                    // ⚡ Thunderstorm Streak
+                } else if (currentStreak >= 40) {
+                    timerCircle.classList.add('timer-streak', 'energy-effect', 'thunderstorm-effect');
+                    container.classList.add('streak-glow', 'stormy-background');
+                    streakIndicator.textContent = `⚡ THUNDERSTORM STREAK: ${currentStreak} ⚡`;
+                    streakIndicator.style.color = '#00ccff';
+                    streakIndicator.style.textShadow = '0 0 10px #00ccff';
+
+                    // 🔥 Inferno Streak
+                } else if (currentStreak >= 20) {
+                    timerCircle.classList.add('timer-streak', 'energy-effect', 'inferno-effect');
+                    container.classList.add('streak-glow', 'inferno-background');
+                    streakIndicator.textContent = `🔥 INFERNO STREAK: ${currentStreak} 🔥`;
+                    streakIndicator.style.color = '#ff3300';
+
+                    // Fondo fuego opcional en el body
+                    document.body.style.background = "linear-gradient(45deg, #660000, #ff3300, #660000)";
+
+                    // 🔥 Master Streak
+                } else if (currentStreak >= 10) {
+                    timerCircle.classList.add('timer-streak', 'energy-effect');
+                    container.classList.add('streak-glow');
+                    streakIndicator.textContent = `🔥 MASTER STREAK: ${currentStreak} 🔥`;
+                    streakIndicator.style.color = '#ff6b35';
+
+                    // ⚡ Lightning Streak
+                } else if (currentStreak >= 7) {
+                    timerCircle.classList.add('timer-streak');
+                    container.classList.add('streak-glow');
+                    streakIndicator.textContent = `⚡ LIGHTNING STREAK: ${currentStreak} ⚡`;
+                    streakIndicator.style.color = '#ffcc00';
+
+                    // 💫 Speed Streak
+                } else if (currentStreak >= 5) {
+                    timerCircle.classList.add('timer-streak');
+                    streakIndicator.textContent = `💫 SPEED STREAK: ${currentStreak} 💫`;
+                    streakIndicator.style.color = '#00ff4c';
+
+                    // ✨ Initial Streak
+                } else if (currentStreak >= 3) {
+                    timerCircle.style.background = 'linear-gradient(45deg, #00ff4c, #33ff66)';
+                    timerCircle.style.boxShadow = '0 0 10px #00ff4c';
+                    streakIndicator.textContent = `✨ STREAK: ${currentStreak} ✨`;
+                    streakIndicator.style.color = '#00ff4c';
+
+                    // Sin racha
+                } else {
+                    removeStreakVisuals();
+                }
+            }
+
+            function removeStreakVisuals() {
+                const timerCircle = document.getElementById('timer');
+                const container = document.querySelector('.container');
+                const streakIndicator = getOrCreateStreakIndicator();
+
+                // quitar clases del timer
+                timerCircle.classList.remove(
+                    'timer-streak',
+                    'energy-effect',
+                    'inferno-effect',
+                    'thunderstorm-effect'
+                );
+
+                // quitar fondos/brillos del contenedor
+                container.classList.remove(
+                    'streak-glow',
+                    'inferno-background',
+                    'stormy-background',
+                    'cosmic-background'
+                );
+
+                // quitar elementos dinámicos: partículas, overlays, ripples, chispas de fuego y relámpagos
+                document.querySelectorAll('.particle, .lightning-overlay, .ripple, .fire-spark, .lightning-bolt').forEach(el => el.remove());
+
+                // restaurar texto e indicadores
+                streakIndicator.textContent = '';
+                streakIndicator.style.color = '';
+                streakIndicator.style.textShadow = '';
+
+                // restaurar timer a estado normal
+                timerCircle.style.background = '';
+                timerCircle.style.backgroundColor = '';
+                timerCircle.style.boxShadow = '';
+                timerCircle.style.border = '';
+
+                // restaurar body
+                document.body.style.background = '';
+
+                // recolorear según tiempo restante (pequeño delay para que el DOM aplique estilos)
+                setTimeout(() => updateTimer(), 50);
+            }
+
+            function getOrCreateStreakIndicator() {
+                let indicator = document.getElementById('streak-indicator');
+
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.id = 'streak-indicator';
+                    indicator.className = 'streak-indicator';
+
+                    // Insertar después del timer
+                    const timer = document.getElementById('timer');
+                    timer.parentNode.insertBefore(indicator, timer.nextSibling);
+                }
+
+                return indicator;
+            }
+            function updateEnergyDisplay() {
+                // Buscar si ya existe el display de energía
+                let energyDisplay = document.getElementById('energy-display');
+
+                if (!energyDisplay) {
+                    // Crear display de energía si no existe
+                    energyDisplay = document.createElement('div');
+                    energyDisplay.id = 'energy-display';
+                    energyDisplay.style.cssText = `
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #00ff4c;
+            text-align: center;
+        `;
+
+                    // Insertar después del título del nivel
+                    const levelTitle = document.getElementById('level-title');
+                    levelTitle.parentNode.insertBefore(energyDisplay, levelTitle.nextSibling);
+                }
+
+                // Actualizar contenido
+                let energySymbols = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < magicEnergy) {
+                        energySymbols += '💎 ';
+                    } else {
+                        energySymbols += '💀 ';
+                    }
+                }
+
+                energyDisplay.innerHTML = `Magic Energy: ${energySymbols}`;
+
+                // Cambiar color según energía restante
+                if (magicEnergy <= 1) {
+                    energyDisplay.style.color = '#ff0000';
+                } else if (magicEnergy <= 2) {
+                    energyDisplay.style.color = '#ff9900';
+                } else {
+                    energyDisplay.style.color = '#00ff4c';
+                }
+            }
+
+            function levelComplete() {
+                clearInterval(timerInterval);
+                document.getElementById('level-score').textContent = score;
+
+                // Referencias al contenedor y botón
+                const levelCompleteContent = document.querySelector('.level-complete-content');
+                const nextButton = document.getElementById('next-level-btn');
+
+                // ---- Limpiar cualquier elemento previo ----
+                const prevDT = document.getElementById('level-complete-datetime');
+                if (prevDT) prevDT.remove();
+
+                const existingStreak = document.getElementById('current-streak-display');
+                if (existingStreak) existingStreak.remove();
+
+                // ---- Mostrar racha actual si aplica ----
+                if (currentStreak > 0) {
+                    const streakDisplay = document.createElement('p');
+                    streakDisplay.id = 'current-streak-display';
+                    streakDisplay.innerHTML = `Current Streak: ${currentStreak}`;
+                    streakDisplay.style.color = '#ffcc00';
+                    streakDisplay.style.fontSize = '1em';
+                    streakDisplay.style.marginTop = '10px';
+                    levelCompleteContent.insertBefore(streakDisplay, nextButton);
+                }
+
+                // ---- Agregar fecha y hora actual (no se duplicará) ----
+                const levelDateTime = document.createElement('p');
+                levelDateTime.id = 'level-complete-datetime';
+                levelDateTime.style.cssText = 'font-size: 0.7em; color: #00ff4c; margin-top: 10px;';
+                levelDateTime.textContent = new Date().toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                levelCompleteContent.insertBefore(levelDateTime, nextButton);
+
+                // ---- Bonificación por evento (conserva tu lógica) ----
+                if (currentEvent === 'double_xp') {
+                    levelScore *= 2;
+                    score += levelScore;
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('level-score').textContent = levelScore;
+                }
+
+                // ---- Mostrar la pantalla temporal de "level complete" ----
+                document.getElementById('level-complete').classList.remove('hidden');
+
+                // ---- Reproducir sonido de victoria si existe ----
+                if (victorySound) {
+                    victorySound.currentTime = 0;
+                    victorySound.play().catch(e => console.log('Error playing victory sound:', e));
+                }
+
+                // ---- Guardar progreso local ----
+                localStorage.setItem('difficultWords', JSON.stringify(difficultWords));
+                localStorage.setItem('wordFailCount', JSON.stringify(wordFailCount));
+            }
+            function gameOver() {
+                document.getElementById('view-leaderboard-start').classList.remove('hidden');
+                clearInterval(timerInterval);
+                retrySendPending();
+                startTop3Updates();
+                saveToLeaderboard(playerName, score);
+                removeStreakVisuals();
+                currentStreak = 0;
+                maxStreak = 0;
+                updateHighestScore();
+
+                // Añadir fecha y hora en la pantalla de Game Over
+                const existingFinalDt = document.getElementById('final-datetime');
+                if (existingFinalDt) existingFinalDt.remove();
+                const finalDateTime = document.createElement('p');
+                finalDateTime.id = 'final-datetime';
+                finalDateTime.style.cssText = 'font-size: 0.8em; color: #ff3333; margin-top: 10px;';
+                finalDateTime.textContent = new Date().toLocaleString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                document.querySelector('.game-over-content').appendChild(finalDateTime);
+                document.getElementById('final-score').textContent = score;
+                // Mostrar las 3 palabras más problemáticas
+                showFocusWordsFeedback();
+
+                // Verificar si se activa Focus Training (al menos 3 palabras falladas en esta sesión y hay palabras para entrenar)
+                var focusWords = getFocusWords().filter(function (w) { return !checkWordMastered(w); });
+                if (sessionMistakeWords.size >= 3 && focusWords.length > 0) {
+                    showFocusTraining(true);
+                } else {
+                    showGameOverScreenDirectly();
+                }
+            }
+
+            function showGameOverScreenDirectly() {
+                document.getElementById('game-over').classList.remove('hidden');
+                showLeaderboard();
+
+                document.getElementById('player-setup').classList.remove('hidden');
+                document.getElementById('start-btn').classList.remove('hidden');
+                document.getElementById('game').classList.add('hidden');
+
+                // Show the game image again when returning to start screen
+                document.getElementById('game-header-image').classList.remove('hidden');
+
+                // Stop background music and play lobby music when returning to start screen
+                if (backgroundMusic) {
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                }
+                if (musicEnabled) {
+                    playAudioBoosted('lobby-music');
+                    playAudioBoosted('lobby-seagulls');
+                }
+            }
+
+            function showGameOver() {
+                // En lugar de mostrar game over, iniciar recuperación
+                if (magicEnergy <= 0 && !isRecovering) {
+                    startEnergyRecovery();
+                }
+            }
+
+            function startEnergyRecovery() {
+                isRecovering = true;
+                clearInterval(timerInterval); // Pausar el timer principal
+
+                // Cambiar la interfaz para modo recuperación
+                document.getElementById('word-to-translate').textContent = 'RECOVERING ENERGY...';
+                document.getElementById('level-title').textContent = 'Energy Recovery';
+                document.getElementById('feedback').textContent = 'Answer 3 easy words correctly to restore your magic energy!';
+                document.getElementById('feedback').style.color = '#00ff4c';
+
+                // Reiniciar contador de errores para la recuperación
+                errorCount = 0;
+                recoveryWordsCorrect = 0;
+
+                // Seleccionar palabras fáciles para recuperación
+                selectRecoveryWords();
+                showNextRecoveryWord();
+            }
+
+            let recoveryWords = [];
+            let recoveryWordsCorrect = 0;
+            let currentRecoveryIndex = 0;
+
+            function selectRecoveryWords() {
+                // Tomar todas las palabras del primer nivel y mezclarlas aleatoriamente
+                const easyWords = Object.keys(levels[0].words);
+
+                // Mezcla aleatoria garantizada (algoritmo Fisher-Yates)
+                for (let i = easyWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [easyWords[i], easyWords[j]] = [easyWords[j], easyWords[i]];
+                }
+
+                // Tomar exactamente las primeras 5 (sin riesgo de quedarse corto)
+                recoveryWords = easyWords.slice(0, 5);
+                currentRecoveryIndex = 0;
+            }
+
+            function showNextRecoveryWord() {
+                if (currentRecoveryIndex < recoveryWords.length) {
+                    currentWord = recoveryWords[currentRecoveryIndex];
+                    document.getElementById('word-to-translate').textContent = currentWord;
+                    document.getElementById('word-to-translate').setAttribute('translate', 'no');
+                    document.getElementById('answer').value = '';
+                    document.getElementById('feedback').textContent = `Recovery word ${recoveryWordsCorrect + 1}/3`;
+                } else {
+                    gameOver();
+                }
+            }
+
+
+            // Function for try again button
+            function tryAgain() {
+                stopTop3Updates();
+                document.getElementById('game-over').classList.add('hidden');
+                startGame();
+            }
+
+
+            function showDifferentWord() {
+                if (!Array.isArray(selectedWords) || selectedWords.length === 0) {
+                    selectWordsWithDifficulty();
+                }
+
+                let pool = selectedWords.filter(w => w !== currentWord);
+
+                if (pool.length === 0) {
+                    selectWordsWithDifficulty();
+                    pool = selectedWords.filter(w => w !== currentWord);
+                }
+
+                if (pool.length === 0) {
+                    const lvl = levels[currentLevel];
+                    const allWords = Object.keys(lvl.words || {});
+                    pool = allWords.filter(w => w !== currentWord);
+                }
+
+                if (pool.length === 0) {
+                    console.warn('No hay palabras disponibles para este nivel:', currentLevel);
+                    return;
+                }
+
+                const next = pool[Math.floor(Math.random() * pool.length)];
+                currentWord = next;
+
+                if (!usedWordsByLevel[currentLevel]) usedWordsByLevel[currentLevel] = new Set();
+                usedWordsByLevel[currentLevel].add(currentWord);
+
+                const display = document.getElementById('word-to-translate');
+                if (display) display.textContent = currentWord;
+
+                const ans = document.getElementById('answer');
+                if (ans) ans.value = '';
+            }
+
+            // If no other words available, we'll just keep the current word
+            function addBonusTime() {
+                if (!bonusTimeUsed) {
+                    timeLeft += 10;
+                    updateTimer();
+                    bonusTimeUsed = true;
+                    document.getElementById('bonus-time-btn').classList.add('disabled');
+
+                    // Play a sound when adding time (using correct sound for feedback)
+                    correctSound.currentTime = 0;
+                    correctSound.play()
+                        .catch(e => console.log('Error playing sound on time bonus:', e));
+                }
+            }
+
+            function skipWord() {
+                if (!skipWordUsed) {
+                    wordIndex++;
+                    document.getElementById('answer').value = '';
+                    skipWordUsed = true;
+                    document.getElementById('skip-word-btn').classList.add('disabled');
+
+                    // Play a sound when skipping (using correct sound for feedback)
+                    correctSound.currentTime = 0;
+                    correctSound.play()
+                        .catch(e => console.log('Error playing sound on skip:', e));
+
+                    nextWord();
+                }
+            }
+
+            function resetPowerups() {
+                bonusTimeUsed = false;
+                skipWordUsed = false;
+                document.getElementById('bonus-time-btn').classList.remove('disabled');
+                document.getElementById('skip-word-btn').classList.remove('disabled');
+            }
+
+            // Function to update highest score
+            function updateHighestScore() {
+                const currentHighest = localStorage.getItem('highestScore') || 0;
+                if (score > currentHighest) {
+                    localStorage.setItem('highestScore', score);
+                    document.getElementById('highest-score').textContent = score;
+                }
+
+                function showEpicVictoryMessage() {
+                    // Crear el contenedor del mensaje
+                    const epicMessage = document.createElement('div');
+                    epicMessage.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 1s ease-in-out;
+        ">
+            <div style="
+                background: linear-gradient(45deg, #ffcc00, #ff3300, #ff0099);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                font-size: 2em;
+                font-family: 'Press Start 2P', cursive;
+                box-shadow: 0 0 30px #ffcc00;
+                animation: epicPulse 2s infinite;
+            ">
+                🌟🔥 LEGENDARY ACHIEVEMENT! 🔥🌟 <br><br>
+                You reached the MAX SCORE of 70!
+            </div>
+        </div>
+    `;
+
+                    document.body.appendChild(epicMessage);
+
+                    // Animaciones CSS
+                    const style = document.createElement('style');
+                    style.innerHTML = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes epicPulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px #ffcc00; }
+            50% { transform: scale(1.1); box-shadow: 0 0 50px #ff0099; }
+            100% { transform: scale(1); box-shadow: 0 0 20px #ffcc00; }
+        }
+    `;
+                    document.head.appendChild(style);
+
+                    // Cerrar automáticamente después de 5s
+                    setTimeout(() => {
+                        document.body.removeChild(epicMessage);
+                    }, 5000);
+                }
+            }
+
+            // Función épica de victoria para adolescentes
+            function showEpicVictoryScreen() {
+                window.leaderboardAPI = "https://script.google.com/macros/s/AKfycbyY727Fzocbl1rqRn5xWTckw_RqtRXOrdQNfaEDELi8R41NKzgIVPCHrQGYbGswVukMHA/exec";
+                saveToLeaderboard(playerName, score);
+                // Crear el contenedor principal
+                const epicContainer = document.createElement('div');
+                epicContainer.id = 'epic-victory-screen';
+                epicContainer.innerHTML = `
+        <div class="epic-overlay">
+            <div class="epic-content">
+                <div class="epic-title">🏆 LEGENDARY MASTER! 🏆</div>
+                <div class="epic-subtitle">You have conquered ALL trials!</div>
+                
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <span class="stat-label">FINAL SCORE:</span>
+                        <span class="stat-value epic-score">${score}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">HIGHEST STREAK:</span>
+                        <span class="stat-value epic-streak">${maxStreak}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">MASTERY LEVEL:</span>
+                        <span class="stat-value epic-level">LEGENDARY</span>
+                    </div>
+                </div>
+                
+                <div class="epic-message">
+                    You are now a TRUE WORD MASTER FROM ARCANIS!<br>
+                    Your legend will be remembered forever! 🌟
+                </div>
+                
+                <button class="epic-button" onclick="closeEpicVictory()">
+                    ✨ CLAIM YOUR GLORY ✨
+                </button>
+            </div>
+            
+            <!-- Efectos de partículas -->
+            <div class="particles-container">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </div>
+    `;
+
+                // Agregar estilos épicos
+                const epicStyles = document.createElement('style');
+                epicStyles.innerHTML = `
+     .epic-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(255,140,0,0.95) 0%, 
+        rgba(255,80,0,0.9) 25%, 
+        rgba(220,50,0,0.85) 50%, 
+        rgba(180,0,60,0.9) 75%, 
+        rgba(100,0,120,0.95) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: epicFadeIn 1s ease-out;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.epic-content {
+    background: linear-gradient(135deg, #0a1628, #1a2a4a, #0d1b30);
+    border: 4px solid #f2c94c;
+    border-radius: 18px;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+    max-width: 95vw;
+    max-height: 95vh;
+    box-shadow: 0 0 40px rgba(242,201,76,0.6), inset 0 0 30px rgba(0,180,219,0.2);
+    animation: epicBounceIn 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.epic-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.2em;
+    background: linear-gradient(45deg, #f2c94c, #ff8c00, #f2c94c, #fff3b0);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowShift 2s ease-in-out infinite, 
+              epicPulse 3s ease-in-out infinite;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    filter: drop-shadow(0 0 8px rgba(242,201,76,0.8));
+}
+
+.epic-subtitle {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7em;
+    color: #00ff4c;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #00ff4c;
+    line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.stats-container {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0,180,219,0.15);
+    border-radius: 12px;
+    border: 2px solid rgba(242,201,76,0.6);
+    box-shadow: inset 0 0 15px rgba(0,180,219,0.2);
+}
+
+.stat-item {
+    margin: 10px 0;
+    font-family: 'Press Start 2P', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-label {
+    color: #ffffff;
+    font-size: 0.6em;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 0.9em;
+    font-weight: bold;
+    text-shadow: 0 0 15px currentColor;
+}
+
+.epic-score {
+    color: #ffcc00;
+    animation: numberGlow 2s ease-in-out infinite;
+}
+
+.epic-streak {
+    color: #ff3300;
+    animation: numberGlow 2s ease-in-out infinite 0.5s;
+}
+
+.epic-level {
+    background: linear-gradient(45deg, #ff0099, #ffcc00, #00ff99);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowShift 1.5s linear infinite;
+}
+
+.epic-message {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6em;
+    color: #ffffff;
+    margin: 15px 0;
+    line-height: 1.6;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    animation: messageGlow 3s ease-in-out infinite;
+}
+
+.epic-button {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7em;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #f2c94c 0%, #ff8c00 50%, #f2c94c 100%);
+    background-size: 200% 200%;
+    color: #0a1628;
+    border: 3px solid #fff3b0;
+    border-radius: 12px;
+    cursor: pointer;
+    animation: buttonRainbow 2s ease-in-out infinite,
+              buttonBounce 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    text-shadow: none;
+    box-shadow: 0 4px 0 #cda434, 0 6px 15px rgba(242,201,76,0.5);
+    margin-top: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.epic-button:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 0 #cda434, 0 10px 25px rgba(242,201,76,0.8);
+}
+
+/* Media query específica para móviles muy pequeños */
+@media (max-width: 480px) {
+    .epic-title {
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+    
+    .epic-subtitle {
+        font-size: 0.6em;
+        margin-bottom: 15px;
+    }
+    
+    .epic-message {
+        font-size: 0.5em;
+        line-height: 1.5;
+        margin: 10px 0;
+    }
+    
+    .epic-button {
+        font-size: 0.6em;
+        padding: 12px 20px;
+    }
+    
+    .stat-label {
+        font-size: 0.5em;
+    }
+    
+    .stat-value {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-height: 600px) {
+    .epic-content {
+        padding: 15px;
+        max-height: 90vh;
+    }
+    
+    .epic-title {
+        font-size: 0.9em;
+        margin-bottom: 8px;
+    }
+    
+    .epic-subtitle {
+        font-size: 0.5em;
+        margin-bottom: 12px;
+    }
+    
+    .stats-container {
+        margin: 10px 0;
+        padding: 10px;
+    }
+    
+    .stat-item {
+        margin: 8px 0;
+    }
+    
+    .epic-message {
+        font-size: 0.45em;
+        margin: 8px 0;
+    }
+}
+        
+        /* Animaciones */
+        @keyframes epicFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes epicBounceIn {
+            0% { 
+                opacity: 0;
+                transform: scale(0.3) rotate(-10deg);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.05) rotate(2deg);
+            }
+            70% { transform: scale(0.9) rotate(-1deg); }
+            100% { 
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        @keyframes rainbowShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes epicPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,204,0,0.8); }
+            50% { text-shadow: 0 0 40px rgba(255,204,0,1), 0 0 60px rgba(255,204,0,0.8); }
+        }
+        
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes numberGlow {
+            0%, 100% { 
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% { 
+                transform: scale(1.1);
+                filter: brightness(1.5);
+            }
+        }
+        
+        @keyframes messageGlow {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes buttonRainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes buttonBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* Partículas flotantes */
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffcc00;
+            border-radius: 50%;
+            animation: float 6s linear infinite;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; background: #ff0099; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; background: #00ff4c; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; background: #ffcc00; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; background: #3300ff; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 4s; background: #ff3300; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; background: #00ffff; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 0.5s; background: #ff6600; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; background: #9900ff; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 2.5s; background: #ffff00; }
+        .particle:nth-child(10) { left: 15%; animation-delay: 3.5s; background: #ff0066; }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    `;
+
+                document.head.appendChild(epicStyles);
+                document.body.appendChild(epicContainer);
+
+                // Stop background music
+                if (typeof backgroundMusic !== 'undefined' && backgroundMusic) {
+                    backgroundMusic.pause();
+                }
+
+                // Reproducir sonido de victoria si está disponible
+                if (victorySound) {
+                    victorySound.currentTime = 0;
+                    victorySound.play().catch(e => console.log('Error playing victory sound:', e));
+                }
+            }
+
+            // Función para cerrar la pantalla épica
+            function closeEpicVictory() {
+                const epicScreen = document.getElementById('epic-victory-screen');
+                if (epicScreen) {
+                    epicScreen.style.animation = 'epicFadeOut 0.5s ease-in';
+                    setTimeout(() => {
+                        epicScreen.remove();
+
+                        // Stop victory sound and restart background lobby music
+                        if (typeof victorySound !== 'undefined' && victorySound) {
+                            victorySound.pause();
+                            victorySound.currentTime = 0;
+                        }
+                        if (backgroundMusic) {
+                            backgroundMusic.pause();
+                            backgroundMusic.currentTime = 0;
+                        }
+                        if (musicEnabled) {
+                            playAudioBoosted('lobby-music');
+                            playAudioBoosted('lobby-seagulls');
+                        }
+
+                        // Regresar al menú principal
+                        document.getElementById('game').classList.add('hidden');
+                        document.getElementById('player-setup').classList.remove('hidden');
+                        document.getElementById('start-btn').classList.remove('hidden');
+                        document.getElementById('game-header-image').classList.remove('hidden');
+                    }, 500);
+                }
+            }
+
+            // Agregar animación de salida
+            const exitAnimation = document.createElement('style');
+            exitAnimation.innerHTML = `
+    @keyframes epicFadeOut {
+        from { opacity: 1; transform: scale(1); }
+        to { opacity: 0; transform: scale(0.8); }
+    }
+`;
+            document.head.appendChild(exitAnimation);
+
+
+            function updateGameClock() {
+                const now = new Date();
+                const options = {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                };
+                document.getElementById('game-clock').textContent = now.toLocaleString('en-US', options);
+            }
+            setInterval(updateGameClock, 1000);
+
+            // cambia por la tuya
+
+
+        })();
+
+    </script>
+
+
+    <!-- Leaderboard modal -->
+    <style>
+        @keyframes epicFadeInModal {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+                filter: drop-shadow(0 0 20px #ffcc00);
+            }
+        }
+
+        #leaderboard-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.82);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #leaderboard-modal {
+            width: 96%;
+            max-width: 900px;
+            /* 1.2 times wider (750 * 1.2 = 900) */
+            background: #003300;
+            border: 8px solid #ffcc00;
+            padding: 24px 28px;
+            border-radius: 12px;
+            color: #ffcc00;
+            font-family: 'Press Start 2P', cursive;
+            text-align: left;
+            max-height: 95vh;
+            /* 1.2 times taller downwards */
+            overflow-y: auto;
+            box-shadow: 0 0 40px #ffcc00, 0 0 80px rgba(255, 204, 0, 0.3);
+            animation: epicFadeInModal 420ms ease-out;
+        }
+
+        /* Scrollbar estilo arcade */
+        #leaderboard-modal::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #leaderboard-modal::-webkit-scrollbar-track {
+            background: #001a00;
+        }
+
+        #leaderboard-modal::-webkit-scrollbar-thumb {
+            background: #ffcc00;
+            border-radius: 5px;
+        }
+
+        #leaderboard-modal h2 {
+            margin: 0 0 20px 0;
+            color: #ffcc00;
+            font-size: 1.2em;
+            text-align: center;
+            text-shadow: 0 0 10px #ffcc00;
+        }
+
+        #leaderboard-list {
+            margin-top: 10px;
+        }
+
+        /* Cada fila de la leaderboard */
+        #leaderboard-list .lb-global-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 10px;
+            border-bottom: 1px solid #004400;
+            font-size: 0.85em;
+            color: #ffffff;
+            transition: background 0.2s;
+            flex-wrap: wrap;
+        }
+
+        #leaderboard-list .lb-global-row:hover {
+            background: rgba(255, 204, 0, 0.06);
+        }
+
+        #leaderboard-list .lb-global-row:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== TOP 1 ROYAL VFX ===== */
+        #leaderboard-list .lb-global-row.top1-row {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg,
+                    rgba(20, 10, 0, 0.95) 0%,
+                    rgba(60, 40, 0, 0.95) 25%,
+                    rgba(30, 20, 0, 0.95) 50%,
+                    rgba(60, 40, 0, 0.95) 75%,
+                    rgba(20, 10, 0, 0.95) 100%);
+            border: 3px solid transparent;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            padding: 20px 16px;
+            font-size: 1.05em;
+            /* Borde arcoiris dorado animado */
+            background-clip: padding-box;
+            box-shadow:
+                0 0 0 3px #ffd700,
+                0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 40px rgba(255, 150, 0, 0.5),
+                0 0 70px rgba(255, 80, 0, 0.3),
+                inset 0 0 30px rgba(255, 204, 0, 0.08);
+            animation: royalPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes royalPulse {
+            0% {
+                box-shadow: 0 0 0 3px #ffd700, 0 0 15px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 150, 0, 0.4), inset 0 0 20px rgba(255, 204, 0, 0.06);
+            }
+
+            50% {
+                box-shadow: 0 0 0 3px #ffd700, 0 0 35px rgba(255, 215, 0, 1), 0 0 65px rgba(255, 100, 0, 0.7), 0 0 100px rgba(255, 50, 0, 0.3), inset 0 0 40px rgba(255, 204, 0, 0.15);
+            }
+
+            100% {
+                box-shadow: 0 0 0 3px #ffd700, 0 0 15px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 150, 0, 0.4), inset 0 0 20px rgba(255, 204, 0, 0.06);
+            }
+        }
+
+        /* Shimmer sweep de oro que cruza la fila */
+        #leaderboard-list .lb-global-row.top1-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.25), rgba(255, 255, 255, 0.15), rgba(255, 215, 0, 0.25), transparent);
+            animation: royalShimmer 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes royalShimmer {
+            0% {
+                left: -100%;
+            }
+
+            60% {
+                left: 150%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+
+        /* Chispas de esquinas */
+        #leaderboard-list .lb-global-row.top1-row::after {
+            content: '✦ ✦ ✦';
+            position: absolute;
+            bottom: 4px;
+            right: 10px;
+            font-size: 0.6em;
+            color: #ffd700;
+            opacity: 0.6;
+            animation: sparkleStars 2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes sparkleStars {
+            from {
+                opacity: 0.3;
+                transform: scale(0.9);
+                color: #ffd700;
+            }
+
+            to {
+                opacity: 0.9;
+                transform: scale(1.1);
+                color: #fff8a0;
+                text-shadow: 0 0 8px #ffd700;
+            }
+        }
+
+        /* Nombre del rey: gradiente dorado animado tipo texto premium */
+        .lb-king-name {
+            background: linear-gradient(90deg, #ffd700, #fff8a0, #ffaa00, #fff8a0, #ffd700);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: royalTextShine 3s linear infinite;
+            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes royalTextShine {
+            0% {
+                background-position: 0% center;
+            }
+
+            100% {
+                background-position: 300% center;
+            }
+        }
+
+        /* Score del rey en dorado */
+        .top1-row .lb-global-score {
+            color: #ffd700 !important;
+            font-size: 1.15em !important;
+            text-shadow: 0 0 8px #ffd700, 0 0 15px #ff8800;
+            animation: scoreGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes scoreGlow {
+            from {
+                text-shadow: 0 0 5px #ffd700;
+            }
+
+            to {
+                text-shadow: 0 0 15px #ffd700, 0 0 25px #ff8800;
+            }
+        }
+
+        /* Medalla del rey más grande */
+        .top1-row .lb-global-medal {
+            font-size: 1.8em !important;
+            animation: medalBounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes medalBounce {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-4px) scale(1.1);
+            }
+        }
+
+        /* Corona flotante */
+        .top1-crown {
+            display: inline-block;
+            font-size: 1.4em;
+            margin-right: 6px;
+            animation: crownFloat 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 6px #ffd700);
+        }
+
+        @keyframes crownFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(5deg);
+            }
+        }
+
+
+        .lb-global-medal {
+            min-width: 36px;
+            font-size: 1.2em;
+        }
+
+        .lb-global-num {
+            color: #ffcc00;
+            min-width: 30px;
+            font-size: 0.9em;
+        }
+
+        .lb-global-name {
+            flex: 1;
+            word-break: break-word;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lb-global-score {
+            color: #00ff4c;
+            white-space: nowrap;
+        }
+
+        .lb-global-streak {
+            color: #ff9900;
+            font-size: 0.75em;
+            white-space: nowrap;
+        }
+
+        .close-leaderboard {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: #ffcc00;
+            color: #000;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            transition: background 0.2s;
+        }
+
+        .close-leaderboard:hover {
+            background: #ff9900;
+        }
+    </style>
+
+    <div id="leaderboard-modal-backdrop" aria-hidden="true">
+        <div id="leaderboard-modal" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
+            <h2 id="leaderboard-title">🏆 Global Leaderboard</h2>
+            <div id="leaderboard-list">
+                <p>Loading scores...</p>
+            </div>
+            <div style="text-align:center; margin-top:12px;">
+                <span id="close-leaderboard" class="close-leaderboard">Close</span>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.leaderboardAPI = "https://script.google.com/macros/s/AKfycbwMAknrkWqBSR8gXOtFS8apc7-QD5Wkxh8NX4LRGw3c/exec";
+
+        // 🔥 Listener global para los botones de leaderboard
+        document.addEventListener('click', function (e) {
+            const id = e.target.id;
+            if (id === 'view-leaderboard-start' || id === 'show-leaderboard-btn' || id === 'view-leaderboard-after-victory') {
+                e.stopPropagation();
+                showLeaderboard();
+            }
+        });
+
+
+
+        // ✅ NUEVO CÓDIGO CON JSONP (SIN CORS)
+        function generateHash(name, score, streak) {
+            const localCoins = (typeof Users !== 'undefined' && Users.data) ? (Users.data.coins || 0) : 0;
+            if (score > 3000 || streak > 3000 || localCoins > 3000) {
+                console.warn("Anti-Cheat: Invalid values detected. Server will reject this save.");
+                return "CHEAT_DETECTED_INVALID_HASH_REJECTED";
+            }
+            const salt = "trialsofmastery2025";
+            const str = name + score + streak + salt;
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
+        function saveToLeaderboard(playerName, score) {
+            try {
+                const rawName = playerName || document.getElementById('player-name-display')?.textContent || document.getElementById('player-name-input')?.value || 'Player';
+                if (rawName === 'Guest') {
+                    console.log('Guest user: skipping Google Leaderboard save.');
+                    return;
+                }
+                const name = encodeURIComponent(rawName);
+                const scoreNum = Number(score);
+                const streakNum = Number(maxStreak) || 0;
+                const coinsNum = (typeof Users !== 'undefined' && Users.data) ? (Users.data.coins || 0) : 0;
+
+                // Anti-cheat limit enforcement
+                if (scoreNum > 3000 || streakNum > 3000 || coinsNum > 3000) {
+                    console.error("Anti-Cheat: Game metrics exceed safe parameters. Operation cancelled.");
+                    return;
+                }
+
+                // Optimización: Limitar wordFails a las top 10 peores palabras para evitar error de URL demasiado larga (414 URI Too Long)
+                const sortedFails = Object.entries(wordFailCount || {})
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                const limitedFails = Object.fromEntries(sortedFails);
+                const wordFailsStr = encodeURIComponent(JSON.stringify(limitedFails));
+
+                const hash = generateHash(decodeURIComponent(name), scoreNum, streakNum);
+
+                // Usar JSONP para confirmar recepción y evitar pérdida de datos (bugs de sincronización)
+                const callbackName = 'jsonpSaveCallback_' + Math.round(1000000 * Math.random());
+                const url = `${window.leaderboardAPI}?action=save&name=${name}&score=${scoreNum}&streak=${streakNum}&coins=${coinsNum}&wordFails=${wordFailsStr}&hash=${hash}&callback=${callbackName}`;
+
+                window[callbackName] = function (response) {
+                    delete window[callbackName];
+                    const scriptTag = document.getElementById(callbackName);
+                    if (scriptTag) scriptTag.remove();
+
+                    if (response && response.success) {
+                        localStorage.removeItem('pendingScore');
+                        console.log('Leaderboard: score saved successfully via JSONP');
+                    } else {
+                        throw new Error("Server rejected save");
+                    }
+                };
+
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = url;
+
+                // Si falla la red, guardamos en pending para el próximo intento
+                script.onerror = function () {
+                    delete window[callbackName];
+                    script.remove();
+                    localStorage.setItem('pendingScore', JSON.stringify({
+                        name: rawName, score: scoreNum, streak: streakNum, coins: coinsNum, wordFails: wordFailCount
+                    }));
+                    console.warn('Leaderboard: save failed (network error), stored as pending.');
+                };
+
+                document.body.appendChild(script);
+
+            } catch (e) {
+                console.error('Save error:', e);
+            }
+        }
+
+        function retrySendPending() {
+            const pending = localStorage.getItem('pendingScore');
+            if (!pending) return;
+            try {
+                const data = JSON.parse(pending);
+                const scoreVal = Number(data.score) || 0;
+                const streakVal = Number(data.streak) || 0;
+                const coinsVal = Number(data.coins) || 0;
+
+                // Anti-cheat verification
+                if (scoreVal > 3000 || streakVal > 3000 || coinsVal > 3000) {
+                    console.warn("Anti-Cheat: Pending score rejected due to violation.");
+                    localStorage.removeItem('pendingScore');
+                    return;
+                }
+
+                const rawName = data.name || 'Player';
+                const name = encodeURIComponent(rawName);
+
+                // Optimización de longitud de URL para retry
+                const sortedFails = Object.entries(data.wordFails || {})
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                const limitedFails = Object.fromEntries(sortedFails);
+                const wordFailsStr = encodeURIComponent(JSON.stringify(limitedFails));
+
+                const hash = generateHash(decodeURIComponent(name), scoreVal, streakVal);
+
+                const callbackName = 'jsonpRetryCallback_' + Math.round(1000000 * Math.random());
+                const url = `${window.leaderboardAPI}?action=save&name=${name}&score=${scoreVal}&streak=${streakVal}&coins=${coinsVal}&wordFails=${wordFailsStr}&hash=${hash}&callback=${callbackName}`;
+
+                window[callbackName] = function (response) {
+                    delete window[callbackName];
+                    const scriptTag = document.getElementById(callbackName);
+                    if (scriptTag) scriptTag.remove();
+
+                    if (response && response.success) {
+                        localStorage.removeItem('pendingScore');
+                        console.log('Leaderboard: pending score synchronized via JSONP');
+                    }
+                };
+
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = url;
+                script.onerror = function () {
+                    delete window[callbackName];
+                    script.remove();
+                    console.warn('Leaderboard: pending score retry failed, will try again next session.');
+                };
+                document.body.appendChild(script);
+            } catch (e) {
+                console.error('Retry error:', e);
+            }
+        }
+
+
+
+
+
+
+
+        function showLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '<p>Loading scores...</p>';
+
+            // Limpiar scripts anteriores
+            const oldScript = document.getElementById('leaderboard-jsonp-script');
+            if (oldScript) oldScript.remove();
+
+            // Crear script JSONP
+            const script = document.createElement('script');
+            script.id = 'leaderboard-jsonp-script';
+            script.src = `${window.leaderboardAPI}?callback=handleLeaderboardData&t=${Date.now()}`;
+
+            script.onerror = function () {
+                list.innerHTML = '<p>Error loading scores. Check connection.</p>';
+                openLeaderboardModal();
+            };
+
+            document.body.appendChild(script);
+
+            // Timeout de seguridad
+            setTimeout(() => {
+                if (list.innerHTML.includes('Loading')) {
+                    list.innerHTML = '<p>Timeout loading scores.</p>';
+                    openLeaderboardModal();
+                }
+            }, 8000);
+        }
+
+        // Callback para recibir datos JSONP - TOP 20
+        function handleLeaderboardData(data) {
+            const list = document.getElementById('leaderboard-list');
+
+            try {
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = '<p>No scores yet. Be the first!</p>';
+                    openLeaderboardModal();
+                    return;
+                }
+
+                // 🔥 FILTRAR DUPLICADOS: Agrupar por nombre y quedarse solo con el puntaje más alto
+                const uniquePlayers = {};
+                data.forEach(entry => {
+                    if (!entry || !entry.name) return;
+                    const name = String(entry.name).trim();
+                    const score = Number(entry.score) || 0;
+                    if (!uniquePlayers[name] || score > (Number(uniquePlayers[name].score) || 0)) {
+                        uniquePlayers[name] = entry;
+                    }
+                });
+                const uniqueData = Object.values(uniquePlayers);
+
+                // Ordenar de mayor a menor
+                uniqueData.sort((a, b) => Number(b.score) - Number(a.score));
+
+                // 🏆 LIMITAR A TOP 20
+                const top20 = uniqueData.slice(0, 20);
+
+                const medals = ['🥇', '🥈', '🥉'];
+                const html = top20.map((r, i) => {
+                    const isTop1 = i === 0;
+                    const medal = medals[i] || '';
+                    let rowClass = isTop1 ? 'lb-global-row top1-row' : 'lb-global-row';
+                    let nameClass = isTop1 ? 'lb-global-name lb-king-name' : 'lb-global-name';
+
+                    // Inject local banner if we have it in Storage
+                    if (typeof Storage !== 'undefined') {
+                        const localU = Storage.getUser(r.name);
+                        if (localU && localU.equippedBanner && typeof getBanner !== 'undefined') {
+                            const b = getBanner(localU.equippedBanner);
+                            if (b) rowClass += ' ' + b.css;
+                        }
+                    }
+
+                    const crownHtml = isTop1 ? '<span class="top1-crown">👑</span>' : '';
+                    const scoreStyle = isTop1 ? 'color:#ffd700;font-size:1.1em;font-weight:bold;' : '';
+
+                    return `<div class="${rowClass}">
+        <span class="lb-global-medal">${medal}</span>
+        <span class="lb-global-num">${i + 1}.</span>
+        <span class="${nameClass}">${crownHtml}${escapeHtml(r.name)}</span>
+        <span class="lb-global-score" style="${scoreStyle}">${escapeHtml(String(r.score))} pts</span>
+        <span class="lb-global-streak">🔥${escapeHtml(String(r.streak || 0))}</span>
+      </div>`;
+                }).join('');
+
+                // Mostrar total de jugadores si hay más de 20
+                const totalPlayers = uniqueData.length;
+                const footer = totalPlayers > 20
+                    ? `<p style="margin-top:15px; color:#00ff4c; font-size:0.6em;">Showing top 20 of ${totalPlayers} players</p>`
+                    : '';
+
+                list.innerHTML = html + footer;
+                openLeaderboardModal();
+            } catch (e) {
+                console.error('Error displaying leaderboard:', e);
+                list.innerHTML = '<p>Error displaying scores.</p>';
+                openLeaderboardModal();
+            }
+        }
+
+        // Función para mostrar TOP 3 en vivo durante el juego
+        function loadTop3Display() {
+            const top3List = document.getElementById('top3-list');
+
+            if (!top3List) return;
+
+            top3List.innerHTML = '<p style="color:#00ff4c;">Loading...</p>';
+
+            // Crear callback temporal
+            window.top3Callback = function (data) {
+                try {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        top3List.innerHTML = '<p style="color:#ffffff;">No scores yet!</p>';
+                        return;
+                    }
+
+                    // Ordenar y tomar top 3
+                    data.sort((a, b) => Number(b.score) - Number(a.score));
+                    const top3 = data.slice(0, 3);
+
+                    // Crear HTML con medallas
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const html = top3.map((player, i) => {
+                        return `<p style="color:#ffffff; margin:5px 0;">
+          ${medals[i]} ${escapeHtml(player.name)}: <span style="color:#ffcc00;">${player.score}</span>
+        </p>`;
+                    }).join('');
+
+                    top3List.innerHTML = html || '<p style="color:#ffffff;">No scores yet!</p>';
+
+                } catch (e) {
+                    console.error('Error loading top 3:', e);
+                    top3List.innerHTML = '<p style="color:#ff3333;">Error loading</p>';
+                }
+            };
+
+            // Cargar datos
+            const script = document.createElement('script');
+            script.src = `${window.leaderboardAPI}?callback=top3Callback&t=${Date.now()}`;
+            document.body.appendChild(script);
+        }
+
+        // Auto-actualizar TOP 3 cada 30 segundos durante el juego
+        let top3Interval;
+
+        function startTop3Updates() {
+            loadTop3Display(); // Cargar inmediatamente
+
+            // Actualizar cada 30 segundos
+            if (top3Interval) clearInterval(top3Interval);
+            top3Interval = setInterval(() => {
+                loadTop3Display();
+            }, 30000); // 30 segundos
+        }
+
+        function stopTop3Updates() {
+            if (top3Interval) {
+                clearInterval(top3Interval);
+                top3Interval = null;
+            }
+        }
+
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/[&<>"]/g, function (c) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]);
+            });
+        }
+
+        function openLeaderboardModal() {
+            const backdrop = document.getElementById('leaderboard-modal-backdrop');
+            backdrop.style.display = 'flex';
+            backdrop.setAttribute('aria-hidden', 'false');
+            playModalSound();
+        }
+
+        function closeLeaderboardModal() {
+            const backdrop = document.getElementById('leaderboard-modal-backdrop');
+            backdrop.style.display = 'none';
+            backdrop.setAttribute('aria-hidden', 'true');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const viewStart = document.getElementById('view-leaderboard-start');
+            const closeBtn = document.getElementById('close-leaderboard');
+            const downloadBtn = document.getElementById('download-csv');
+            const showBtn = document.getElementById('show-leaderboard-btn');
+
+            if (viewStart) viewStart.addEventListener('click', function (e) { e.stopPropagation(); showLeaderboard(); });
+            if (closeBtn) closeBtn.addEventListener('click', closeLeaderboardModal);
+            if (downloadBtn) downloadBtn.addEventListener('click', downloadLeaderboardCSV);
+            if (showBtn) showBtn.addEventListener('click', function (e) { e.stopPropagation(); showLeaderboard(); });
+
+            const backdrop = document.getElementById('leaderboard-modal-backdrop');
+            backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeLeaderboardModal(); });
+
+            const gameOverEl = document.getElementById('game-over');
+            if (gameOverEl) {
+                const obs = new MutationObserver(mutations => {
+                    mutations.forEach(m => {
+                        if (m.attributeName === 'class') {
+                            if (!gameOverEl.classList.contains('hidden')) {
+                                const name = document.getElementById('player-name-display')?.textContent || document.getElementById('player-name-input')?.value || 'Player';
+
+                                setTimeout(() => showLeaderboard(), 300);
+                            }
+                        }
+                    });
+                });
+                obs.observe(gameOverEl, { attributes: true });
+            }
+
+            const levelCompleteEl = document.getElementById('level-complete');
+            if (levelCompleteEl) {
+                const obs2 = new MutationObserver(mutations => {
+                    mutations.forEach(m => {
+                        if (m.attributeName === 'class') {
+                            if (!levelCompleteEl.classList.contains('hidden')) {
+                                // victory send is handled in showEpicVictoryScreen
+                            }
+                        }
+                    });
+                });
+                obs2.observe(levelCompleteEl, { attributes: true });
+            }
+        });
+
+        function playModalSound() {
+            try {
+                const audio = new Audio('https://freesound.org/data/previews/522/522375_11682929-lq.mp3');
+                audio.volume = 0.5;
+                audio.play().catch(e => { });
+            } catch (e) { }
+        }
+
+
+    </script>
+
+    <!-- =====================================================
+     SISTEMA NUEVO: SHOP, BANNERS, USUARIOS — LOCAL
+     ===================================================== -->
+
+    <!-- CSS nuevos sistemas y estilos completos -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/banners.css">
+    <link rel="stylesheet" href="css/shop.css">
+
+    <!-- HUD top-right: Arcane Coins + Shop -->
+    <div id="shop-hud" style="display:none;">
+        <div class="hud-coins-box">
+            <span class="coin-icon">🪙</span>
+            <span id="hud-coins-val">0</span> Arcane Coins
+        </div>
+        <button class="hud-shop-btn" id="hud-shop-btn">🛒 SHOP</button>
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="shop-overlay">
+        <div class="shop-panel">
+            <button class="close-btn" id="close-shop">×</button>
+            <div class="shop-header">
+                <h2>🛒 ARCANE SHOP</h2>
+                <div class="shop-balance">Balance: <span id="shop-bal">0</span> 🪙 Arcane Coins</div>
+            </div>
+
+            <!-- TABS DE NAVEGACIÓN -->
+            <div class="shop-tabs">
+                <div class="shop-tab-wrapper">
+                    <button class="shop-tab active" id="tab-banners">🎖 ESTANDARTES ▾</button>
+                    <div class="shop-submenu">
+                        <div class="shop-submenu-item active" id="submenu-banners" onclick="shopSwitchTab('banners')">🎖
+                            VER ESTANDARTES</div>
+                        <div class="shop-submenu-item" id="submenu-runas" onclick="shopSwitchTab('runas')">🔮 TIENDA DE
+                            RUNAS (COMING SOON)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SECCIÓN: ESTANDARTES ===== -->
+            <div id="shop-section-banners">
+                <!-- Sección de Canje de Códigos Promocionales -->
+                <div class="shop-promo-section"
+                    style="margin: 15px auto; padding: 15px; background: rgba(255,255,255,0.06); border-radius: 8px; border: 2px dashed #ff0099; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; max-width: 90%;">
+                    <span style="font-size: 0.6em; color: #ff0099; text-shadow: 0 0 5px #ff0099;">✨ ¿TIENES UN CÓDIGO
+                        SECRETO? ✨</span>
+                    <div style="display: flex; width: 100%; gap: 10px; justify-content: center; align-items: center;">
+                        <input type="text" id="promo-code-input" placeholder="CÓDIGO..."
+                            style="font-family:'Press Start 2P', cursive; font-size:0.65em; padding:10px; width:60%; background:#000; border:2px solid #ffcc00; color:#fff; border-radius:6px; text-align:center; text-transform:uppercase;">
+                        <button id="promo-code-btn"
+                            style="font-family:'Press Start 2P', cursive; font-size:0.65em; padding:10px 15px; background:linear-gradient(135deg, #ff0099, #ffcc00); color:#000; border:2px solid #fff; border-radius:6px; cursor:pointer; font-weight:bold; transition:all 0.2s;">CANJEAR</button>
+                    </div>
+                    <div id="promo-code-feedback"
+                        style="font-size: 0.5em; min-height: 12px; font-weight: bold; text-align: center;"></div>
+                </div>
+                <div class="shop-grid" id="shop-grid"></div>
+            </div>
+
+            <!-- ===== SECCIÓN: RUNAS (COMING SOON) ===== -->
+            <div id="shop-section-runas" style="display:none;">
+                <div class="runes-coming-soon">
+                    <div class="runes-glyph">𝕽</div>
+                    <h3 class="runes-title">TIENDA DE RUNAS</h3>
+                    <div class="runes-badge">✦ COMING SOON ✦</div>
+                    <p class="runes-desc">Las antiguas runas del Arcano están siendo descifradas.<br>Pronto podrás
+                        desbloquear poderes místicos y habilidades especiales.</p>
+                    <div class="runes-preview-grid">
+                        <div class="rune-placeholder">᚜ ?</div>
+                        <div class="rune-placeholder">ᚠ ?</div>
+                        <div class="rune-placeholder">ᚢ ?</div>
+                        <div class="rune-placeholder">ᚦ ?</div>
+                        <div class="rune-placeholder">ᚨ ?</div>
+                        <div class="rune-placeholder">ᚱ ?</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LEADERBOARD LOCAL MODAL -->
+    <div id="lb-overlay">
+        <div class="lb-panel">
+            <button class="close-btn" id="close-lb">×</button>
+            <h2>🏆 LEADERBOARD LOCAL</h2>
+            <div id="lb-list"></div>
+        </div>
+    </div>
+
+    <!-- Preview de usuario en el menú -->
+    <style>
+        #user-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed #ffcc00;
+            border-radius: 5px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 0.7em;
+            text-align: left;
+        }
+
+        #user-preview .stat {
+            margin: 3px 0;
+        }
+    </style>
+
+    <!-- Módulos JS completos para que el juego funcione -->
+    <script src="data/students.js"></script>
+    <script src="data/banners.js"></script>
+    <script src="data/words.js"></script>
+    
+    <script src="js/security.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/users.js"></script>
+    
+    <script src="js/effects.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/leaderboard.js"></script>
+    
+    <script src="js/game.js"></script>
+
+    <!-- Lógica de Tabs del Shop + Música de Lobby -->
+    <script>
+        // ---- TABS: Estandartes / Runas ----
+        function shopSwitchTab(tab) {
+            var secBanners = document.getElementById('shop-section-banners');
+            var secRunas = document.getElementById('shop-section-runas');
+            var tabBanners = document.getElementById('tab-banners');
+
+            var submenuBanners = document.getElementById('submenu-banners');
+            var submenuRunas = document.getElementById('submenu-runas');
+            var tabRunas = document.getElementById('tab-runas');
+
+            var shopPanel = document.querySelector('.shop-panel');
+
+            if (tab === 'runas') {
+                if (secBanners) secBanners.style.display = 'none';
+                if (secRunas) secRunas.style.display = 'block';
+                if (tabBanners) {
+                    tabBanners.classList.remove('active');
+                    tabBanners.innerHTML = '🔮 RUNAS ▾';
+                }
+                if (tabRunas) tabRunas.classList.add('active');
+                if (submenuBanners) submenuBanners.classList.remove('active');
+                if (submenuRunas) submenuRunas.classList.add('active');
+                if (shopPanel) shopPanel.classList.remove('theme-beach');
+            } else {
+                if (secRunas) secRunas.style.display = 'none';
+                if (secBanners) secBanners.style.display = 'block';
+                if (tabBanners) {
+                    tabBanners.classList.add('active');
+                    tabBanners.innerHTML = '🎖 ESTANDARTES ▾';
+                }
+                if (tabRunas) tabRunas.classList.remove('active');
+                if (submenuBanners) submenuBanners.classList.add('active');
+                if (submenuRunas) submenuRunas.classList.remove('active');
+                if (shopPanel) shopPanel.classList.add('theme-beach');
+            }
+        }
+
+        // Al abrir el shop, siempre mostrar la pestaña de Estandartes por defecto
+        // Y configurar click handler para dispositivos móviles en la navegación del submenú
+        document.addEventListener('DOMContentLoaded', function () {
+            var shopBtn = document.getElementById('hud-shop-btn');
+            if (shopBtn) {
+                shopBtn.addEventListener('click', function () {
+                    shopSwitchTab('banners');
+                });
+            }
+
+            // Click toggles submenu class to support mobile touch devices
+            var tabBannersBtn = document.getElementById('tab-banners');
+            if (tabBannersBtn) {
+                tabBannersBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var wrapper = this.parentElement;
+                    if (wrapper) {
+                        wrapper.classList.toggle('open');
+                    }
+                });
+            }
+
+            // Close submenu when clicking anywhere outside
+            document.addEventListener('click', function () {
+                var wrapper = document.querySelector('.shop-tab-wrapper');
+                if (wrapper) {
+                    wrapper.classList.remove('open');
+                }
+            });
+        });
+
+        // ---- MÚSICA: Reanudar lobby music al volver al menú ----
+        // Patch sobre el botón de game-over y return-menu al terminar el juego
+        document.addEventListener('DOMContentLoaded', function () {
+            // Reanuda lobby music cuando se hace game over y se vuelve al menú
+            var tryAgainBtn = document.getElementById('try-again-btn');
+            if (tryAgainBtn) {
+                tryAgainBtn.addEventListener('click', function () {
+                    // La música del juego sigue sonando (tryAgain reinicia juego)
+                }, true);
+            }
+
+            // Observar cuando el game-over se hace visible para reanudar lobby al volver
+            // (se usa Game.returnToMenu en game.js que muestra la pantalla de inicio)
+            var returnMenuBtn = document.getElementById('return-menu-btn');
+            if (returnMenuBtn) {
+                returnMenuBtn.addEventListener('click', function () {
+                    setTimeout(function () {
+                        var bgMusic = document.getElementById('background-music');
+                        var lobbyMusic = document.getElementById('lobby-music');
+                        var lobbySeagulls = document.getElementById('lobby-seagulls');
+                        if (bgMusic && !bgMusic.paused) {
+                            bgMusic.pause();
+                            bgMusic.currentTime = 0;
+                        }
+                        playAudioBoosted('lobby-music');
+                        playAudioBoosted('lobby-seagulls');
+                    }, 300);
+                });
+            }
+        });
+    </script>
+
+    
+
+    <script>
+        // ===================================================
+        // INTEGRACIÓN: conectar nuevos sistemas con el juego
+        // ===================================================
+
+        (function () {
+            'use strict';
+
+            // Preview is now handled by the original #selected-user-card
+
+            // Cargar usuario al cambiar select
+            var sel = document.getElementById('player-name-input');
+            if (sel) {
+                sel.addEventListener('change', function (e) {
+                    Users.load(e.target.value);
+                });
+            }
+
+            // --- Sobreescribir función de inicio para cargar datos del usuario ---
+            var _origStartGame = window.startGame || null;
+
+            // Patch: cuando el juego comienza, aplicar banner al nombre
+            var origStartBtn = document.getElementById('start-btn');
+            if (origStartBtn) {
+                origStartBtn.addEventListener('click', function () {
+                    setTimeout(function () {
+                        if (Users.data) Users._applyBannerToName();
+                        LB.renderTop3();
+                    }, 100);
+                });
+            }
+
+            // --- Recompensar monedas por respuesta correcta ---
+            // Parche no intrusivo: interceptar el DOM del score
+            var scoreEl = document.getElementById('score');
+            if (scoreEl) {
+                var lastScore = 0;
+                var scoreObserver = new MutationObserver(function () {
+                    var newScore = parseInt(scoreEl.textContent) || 0;
+                    if (newScore > lastScore) {
+                        var diff = newScore - lastScore;
+                        Users.addCoins(diff * 2); // 2 Arcane Coins por punto
+                        lastScore = newScore;
+                    }
+                });
+                scoreObserver.observe(scoreEl, { childList: true, subtree: true, characterData: true });
+            }
+
+            // --- Guardar highscore cuando aparece Game Over ---
+            var gameOverEl = document.getElementById('game-over');
+            if (gameOverEl) {
+                var goObserver = new MutationObserver(function () {
+                    if (!gameOverEl.classList.contains('hidden')) {
+                        var s = parseInt((document.getElementById('final-score') || {}).textContent) || 0;
+                        Users.updateHighScore(s);
+                        LB.renderTop3();
+                        setTimeout(function () { LB.renderTop3(); }, 500);
+                    }
+                });
+                goObserver.observe(gameOverEl, { attributes: true });
+            }
+
+            // --- Guardar highscore en victoria épica ---
+            var origClose = window.closeEpicVictory;
+            window.closeEpicVictory = function () {
+                var s = parseInt((document.getElementById('score') || {}).textContent) || 0;
+                Users.updateHighScore(s);
+                Users.addCoins(500); // Bonus victoria
+                if (origClose) origClose.call(this);
+            };
+
+            // --- Botón Leaderboard abre el local ---
+            document.addEventListener('click', function (e) {
+                if (e.target && (e.target.id === 'view-leaderboard-start')) {
+                    // También abrir el local
+                    LB.open();
+                }
+            });
+
+            // --- Actualizar Top3 al arrancar ---
+            document.addEventListener('DOMContentLoaded', function () {
+                setTimeout(function () { LB.renderTop3(); }, 500);
+            });
+
+        })();
+    </script>
+
+
+    
+
+    <script>
+        // ============================================================
+        // MEJORAS UI/UX — Menú, Selector obligatorio, VFX energía
+        // ============================================================
+        (function () {
+            'use strict';
+
+            /* ---- MEJORA: Selector de personaje obligatorio ---- */
+            document.addEventListener('DOMContentLoaded', function () {
+                var setup = document.getElementById('player-setup');
+                if (!setup) return;
+
+                // Inyectar warning y card de usuario debajo del select
+                var sel = document.getElementById('player-name-input');
+                if (!sel) return;
+
+                // Warning de selección obligatoria
+                var warning = document.createElement('div');
+                warning.id = 'select-warning';
+                warning.innerHTML = '⚠ SELECCIONA TU NOMBRE PARA JUGAR';
+                sel.parentNode.insertBefore(warning, sel.nextSibling);
+
+                // Card del usuario seleccionado
+                var userCard = document.createElement('div');
+                userCard.id = 'selected-user-card';
+                userCard.innerHTML =
+                    '<span class="card-username" id="card-username">—</span>' +
+                    '<span class="card-coins">🪙 Coins: <span id="card-coins-val">0</span></span><br>' +
+                    '<span class="card-score">🏆 Best: <span id="card-score-val">0</span></span>' +
+                    '<span class="card-banner-preview-wrap" id="card-banner-preview"></span>';
+                warning.parentNode.insertBefore(userCard, warning.nextSibling);
+
+                // Actualizar card al seleccionar usuario
+                sel.addEventListener('change', function () {
+                    var name = sel.value;
+                    if (name) {
+                        localStorage.setItem('savedPlayerName', name);
+                        document.cookie = "savedPlayerName=" + encodeURIComponent(name) + "; max-age=31536000; path=/";
+                    } else {
+                        localStorage.removeItem('savedPlayerName');
+                        document.cookie = "savedPlayerName=; max-age=0; path=/";
+                    }
+
+                    if (!name) {
+                        userCard.style.display = 'none';
+                        warning.style.display = 'none';
+                        return;
+                    }
+                    // Cargar datos del usuario
+                    if (typeof Users !== 'undefined') {
+                        Users.load(name);
+                        var data = Users.data;
+                        if (data) {
+                            document.getElementById('card-username').textContent = '👤 ' + name;
+                            document.getElementById('card-coins-val').textContent = data.coins || 0;
+                            document.getElementById('card-score-val').textContent = data.highScore || 0;
+                            // Banner preview
+                            var bp = document.getElementById('card-banner-preview');
+                            bp.innerHTML = '';
+                            if (data.equippedBanner && typeof getBanner === 'function') {
+                                var bn = getBanner(data.equippedBanner);
+                                if (bn) {
+                                    var sp = document.createElement('span');
+                                    sp.className = bn.css;
+                                    sp.style.fontSize = '0.9em';
+                                    sp.textContent = name;
+                                    bp.appendChild(document.createTextNode('🎖 '));
+                                    bp.appendChild(sp);
+                                }
+                            } else {
+                                bp.textContent = '🎖 Sin banner equipado';
+                            }
+                            userCard.style.display = 'block';
+                            warning.style.display = 'none';
+                        }
+                    } else {
+                        document.getElementById('card-username').textContent = '👤 ' + name;
+                        userCard.style.display = 'block';
+                        warning.style.display = 'none';
+                    }
+                });
+
+                // Helper para leer cookies
+                function getCookie(cookieName) {
+                    var value = "; " + document.cookie;
+                    var parts = value.split("; " + cookieName + "=");
+                    if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
+                    return null;
+                }
+
+                // Auto-cargar usuario guardado
+                var savedName = localStorage.getItem('savedPlayerName') || getCookie('savedPlayerName');
+                if (savedName) {
+                    var options = sel.options;
+                    for (var i = 0; i < options.length; i++) {
+                        if (options[i].value === savedName) {
+                            sel.value = savedName;
+                            sel.dispatchEvent(new Event('change'));
+                            break;
+                        }
+                    }
+                }
+
+                // Interceptar START para bloquear si no hay usuario
+                var startBtn = document.getElementById('start-btn');
+                if (startBtn) {
+                    startBtn.addEventListener('click', function (e) {
+                        if (!sel.value) {
+                            e.stopImmediatePropagation();
+                            warning.style.display = 'block';
+                            sel.style.borderColor = '#ff3300';
+                            sel.style.boxShadow = '0 0 15px rgba(255,51,0,0.6)';
+                            setTimeout(function () {
+                                sel.style.borderColor = '';
+                                sel.style.boxShadow = '';
+                            }, 2000);
+                        }
+                    }, true); // captura ANTES que el listener original
+                }
+            });
+
+            /* ---- VFX: Pérdida de energía ---- */
+            function triggerEnergyLossVFX() {
+                // Flash rojo en pantalla
+                var flash = document.createElement('div');
+                flash.className = 'energy-loss-flash';
+                document.body.appendChild(flash);
+                setTimeout(function () { flash.remove(); }, 500);
+
+                // Icono flotante
+                var icon = document.createElement('div');
+                icon.className = 'energy-loss-icon';
+                icon.textContent = '💔';
+                document.body.appendChild(icon);
+                setTimeout(function () { icon.remove(); }, 800);
+
+                // Shake del contenedor
+                var cont = document.querySelector('.container');
+                if (cont) {
+                    cont.classList.add('shake');
+                    setTimeout(function () { cont.classList.remove('shake'); }, 500);
+                }
+            }
+
+            /* ---- VFX: Respuesta correcta (confetti mini) ---- */
+            function triggerCorrectVFX() {
+                var colors = ['#ffcc00', '#00ff4c', '#00ccff', '#ff0099', '#ffffff'];
+                for (var i = 0; i < 8; i++) {
+                    (function (idx) {
+                        setTimeout(function () {
+                            var p = document.createElement('div');
+                            p.className = 'confetti-particle';
+                            p.style.cssText = 'left:' + (40 + Math.random() * 20) + '%; top:50%;' +
+                                'background:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
+                                '--cx:' + (Math.random() * 80 - 40) + 'px;' +
+                                'box-shadow: 0 0 4px ' + colors[Math.floor(Math.random() * colors.length)];
+                            document.body.appendChild(p);
+                            setTimeout(function () { p.remove(); }, 700);
+                        }, idx * 40);
+                    })(i);
+                }
+            }
+
+            /* ---- PATCH: Interceptar feedback de respuestas para VFX ---- */
+            var feedbackEl = document.getElementById('feedback');
+            if (feedbackEl) {
+                var origFeedback = '';
+                var fbObserver = new MutationObserver(function () {
+                    var txt = feedbackEl.textContent || '';
+                    if (txt === origFeedback) return;
+                    origFeedback = txt;
+
+                    feedbackEl.classList.remove('correct-fb', 'wrong-fb');
+
+                    // Detectar si es correcto o incorrecto mirando el color o texto
+                    var style = feedbackEl.style.color;
+                    if (style && (style.includes('00ff4c') || style === 'rgb(0, 255, 76)' || style.includes('00ff00') || style === 'rgb(0, 255, 0)')) {
+                        feedbackEl.classList.add('correct-fb');
+                        triggerCorrectVFX();
+                    } else if (txt && txt.length > 0 && style) {
+                        feedbackEl.classList.add('wrong-fb');
+                        triggerEnergyLossVFX();
+                    }
+                });
+                fbObserver.observe(feedbackEl, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style'] });
+            }
+
+            /* ---- Exponer VFX globalmente para debug ---- */
+            window._vfx = { energyLoss: triggerEnergyLossVFX, correct: triggerCorrectVFX };
+
+        })();
+    </script>
+
+</body>
+
+</html>

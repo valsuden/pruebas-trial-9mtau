@@ -1,0 +1,308 @@
+// =============================================================================
+// CÓDIGO DE GOOGLE APPS SCRIPT PARA TU HOJA DE CÁLCULO DE GOOGLE
+// =============================================================================
+// Instrucciones de Instalación (PRIMERA VEZ):
+// 1. Abre tu Hoja de Cálculo de Google donde tienes el Leaderboard.
+// 2. Ve al menú superior: Extensiones > Apps Script.
+// 3. Borra todo el código que haya allí y pega todo este código de abajo.
+// 4. Haz clic en el icono del "Disquete" (Guardar proyecto).
+// 5. Haz clic en el botón superior: "Implementar" (o Deploy) > "Nueva Implementación".
+// 6. En el engranaje de configuración, selecciona "Aplicación web".
+// 7. Configura exactamente estas opciones:
+//    - Descripción: "Base de Datos de Arcane Game"
+//    - Ejecutar como: "Tú (tu_correo@gmail.com)"
+//    - Quién tiene acceso: "Cualquiera" (O "Anyone" - ¡Super importante!)
+// 8. Haz clic en "Implementar" y autoriza todos los permisos que Google te solicite.
+// 9. Copia la URL de la aplicación web que te da al final y asegúrate de que sea la misma
+//    que está configurada en tu index.html como window.leaderboardAPI.
+//
+// Instrucciones de ACTUALIZACIÓN (cuando cambies el código):
+// 1. Pega el nuevo código en Apps Script y guarda (Disquete).
+// 2. Ve a "Implementar" > "Administrar implementaciones" (Manage deployments).
+// 3. Haz clic en el ícono del LÁPIZ (editar) de tu implementación activa.
+// 4. En "Versión", selecciona "Nueva versión" (New version).
+// 5. Haz clic en "Implementar" (Deploy).
+// ¡¡IMPORTANTE!! Si no haces el paso 4, los cambios NO se reflejan en la web.
+// La URL NO cambia al actualizar, sigue siendo la misma.
+// =============================================================================
+
+function doGet(e) {
+  var action = e.parameter.action;
+  var callback = e.parameter.callback;
+  
+  // Asegurar automáticamente que existan todas las hojas necesarias (Leaderboard, Profiles, Codes)
+  checkAndCreateSheets();
+  
+  var responseData = {};
+  
+  try {
+    if (action === "save") {
+      // Guardar puntuación clásica en Leaderboard
+      var name = e.parameter.name;
+      var score = parseInt(e.parameter.score) || 0;
+      var streak = parseInt(e.parameter.streak) || 0;
+      var coins = parseInt(e.parameter.coins) || 0;
+      var wordFails = e.parameter.wordFails || "{}";
+      var providedHash = e.parameter.hash;
+      
+      if (!validateHash(name, score, streak, providedHash)) {
+        responseData = { success: false, error: "CHEAT_DETECTED: Invalid Hash Signature" };
+      } else {
+        saveLeaderboardEntry(name, score, streak, coins, wordFails);
+        responseData = { success: true, message: "Leaderboard saved" };
+      }
+      
+    } else if (action === "saveProfile") {
+      // Sincronizar inventario completo (Base64) en Profiles
+      var name = e.parameter.name;
+      var profile = e.parameter.profile;
+      
+      saveProfileEntry(name, profile);
+      responseData = { success: true, message: "Profile saved" };
+      
+    } else if (action === "getProfile") {
+      // Cargar inventario completo
+      var name = e.parameter.name;
+      var profileStr = getProfileEntry(name);
+      responseData = { success: true, name: name, profile: profileStr };
+      
+    } else if (action === "addCode") {
+      // Crear un código promocional dinámico online
+      var code = e.parameter.code;
+      var coins = parseInt(e.parameter.coins) || 0;
+      var expiresAt = e.parameter.expiresAt;
+      
+      savePromoCode(code, coins, expiresAt);
+      responseData = { success: true, message: "Promo code created" };
+      
+    } else if (action === "getCodes") {
+      // Obtener todos los códigos promocionales dinámicos online
+      var codesList = getPromoCodes();
+      responseData = { success: true, codes: codesList };
+      
+    } else {
+      // Acción por defecto: devolver los récords del Leaderboard (JSONP compatible)
+      var topScores = getTopScores();
+      responseData = topScores;
+    }
+  } catch (error) {
+    responseData = { success: false, error: error.toString() };
+  }
+  
+  // Formatear salida como JSON o JSONP
+  var jsonString = JSON.stringify(responseData);
+  if (callback) {
+    return ContentService.createTextOutput(callback + "(" + jsonString + ")")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } else {
+    // Si es un guardado clásico con Image(), devolvemos un píxel transparente
+    if (action === "save" || action === "saveProfile" || action === "addCode") {
+      return ContentService.createTextOutput("").setMimeType(ContentService.MimeType.TEXT);
+    }
+    return ContentService.createTextOutput(jsonString)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  // doPost maneja solicitudes POST para evitar límites de longitud de URL con inventarios grandes.
+  // Reutiliza la misma lógica de doGet.
+  return doGet(e);
+}
+
+// -----------------------------------------------------------------------------
+// Funciones Internas de Base de Datos en Sheets
+// -----------------------------------------------------------------------------
+
+function checkAndCreateSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Leaderboard (si no existe)
+  var sheetLeader = ss.getSheetByName("Leaderboard");
+  if (!sheetLeader) {
+    sheetLeader = ss.insertSheet("Leaderboard");
+    sheetLeader.appendRow(["Timestamp", "Name", "HighScore", "MaxStreak", "Coins", "WordFails"]);
+    sheetLeader.getRange("A1:F1").setFontWeight("bold").setBackground("#d9ead3");
+  }
+  
+  // 2. Profiles (si no existe)
+  var sheetProfiles = ss.getSheetByName("Profiles");
+  if (!sheetProfiles) {
+    sheetProfiles = ss.insertSheet("Profiles");
+    sheetProfiles.appendRow(["Timestamp", "Name", "ProfileData"]);
+    sheetProfiles.getRange("A1:C1").setFontWeight("bold").setBackground("#f4ece1");
+  }
+  
+  // 3. Codes (si no existe)
+  var sheetCodes = ss.getSheetByName("Codes");
+  if (!sheetCodes) {
+    sheetCodes = ss.insertSheet("Codes");
+    sheetCodes.appendRow(["Timestamp", "Code", "Coins", "ExpiresAt"]);
+    sheetCodes.getRange("A1:D1").setFontWeight("bold").setBackground("#c9daf8");
+  }
+}
+
+function saveLeaderboardEntry(name, score, streak, coins, wordFails) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Leaderboard");
+  var data = sheet.getDataRange().getValues();
+  var foundRow = -1;
+  
+  // Normalizar nombre: trim y eliminar espacios dobles
+  name = (name || "").toString().trim().replace(/\s+/g, " ");
+  if (!name) return;
+  
+  for (var i = 1; i < data.length; i++) {
+    var existingName = (data[i][1] || "").toString().trim();
+    if (existingName === name) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  var timestamp = new Date();
+  if (foundRow !== -1) {
+    var existingScore = parseInt(data[foundRow - 1][2]) || 0;
+    
+    // Siempre actualizar fecha y monedas (ya que las monedas pueden acumularse)
+    sheet.getRange(foundRow, 1).setValue(timestamp);
+    sheet.getRange(foundRow, 5).setValue(coins);
+    
+    // Solo actualizar el score, streak y palabras falladas si hay un nuevo récord
+    if (score > existingScore) {
+      sheet.getRange(foundRow, 3).setValue(score);
+      sheet.getRange(foundRow, 4).setValue(streak);
+      sheet.getRange(foundRow, 6).setValue(wordFails);
+    }
+  } else {
+    sheet.appendRow([timestamp, name, score, streak, coins, wordFails]);
+  }
+}
+
+function saveProfileEntry(name, profileBase64) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Profiles");
+  var data = sheet.getDataRange().getValues();
+  var foundRow = -1;
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === name) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  var timestamp = new Date();
+  if (foundRow !== -1) {
+    sheet.getRange(foundRow, 1).setValue(timestamp);
+    sheet.getRange(foundRow, 3).setValue(profileBase64);
+  } else {
+    sheet.appendRow([timestamp, name, profileBase64]);
+  }
+}
+
+function getProfileEntry(name) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Profiles");
+  var data = sheet.getDataRange().getValues();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === name) {
+      return data[i][2] || "";
+    }
+  }
+  return "";
+}
+
+function savePromoCode(code, coins, expiresAt) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Codes");
+  var data = sheet.getDataRange().getValues();
+  var foundRow = -1;
+  
+  var upperCode = code.toUpperCase();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === upperCode) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  var timestamp = new Date();
+  if (foundRow !== -1) {
+    sheet.getRange(foundRow, 1).setValue(timestamp);
+    sheet.getRange(foundRow, 3).setValue(coins);
+    sheet.getRange(foundRow, 4).setValue(expiresAt);
+  } else {
+    sheet.appendRow([timestamp, upperCode, coins, expiresAt]);
+  }
+}
+
+function getPromoCodes() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Codes");
+  var data = sheet.getDataRange().getValues();
+  var codes = [];
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1]) {
+      codes.push({
+        code: data[i][1],
+        coins: parseInt(data[i][2]) || 0,
+        expiresAt: data[i][3] || ""
+      });
+    }
+  }
+  return codes;
+}
+
+function getTopScores() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Leaderboard");
+  var data = sheet.getDataRange().getValues();
+  var unique = {};
+  
+  // Deduplicar por nombre y quedarse con el puntaje más alto
+  for (var i = 1; i < data.length; i++) {
+    var name = (data[i][1] || "").toString().trim();
+    if (!name) continue;
+    
+    var score = parseInt(data[i][2]) || 0;
+    var streak = parseInt(data[i][3]) || 0;
+    var coins = parseInt(data[i][4]) || 0;
+    
+    if (!unique[name] || score > unique[name].score) {
+      unique[name] = {
+        name: name,
+        score: score,
+        streak: streak,
+        coins: coins
+      };
+    }
+  }
+  
+  var list = [];
+  for (var key in unique) {
+    list.push(unique[key]);
+  }
+  
+  list.sort(function(a, b) {
+    return b.score - a.score;
+  });
+  
+  // Devolver los top 30 para que el cliente tenga suficientes datos
+  return list.slice(0, 30);
+}
+
+function validateHash(name, score, streak, providedHash) {
+  var salt = "trialsofmastery2025";
+  var str = name + score + streak + salt;
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  var expectedHash = Math.abs(hash).toString(36);
+  return expectedHash === providedHash;
+}
